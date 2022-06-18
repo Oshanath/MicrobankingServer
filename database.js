@@ -5,18 +5,18 @@ function createConnection(){
     database = mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: 'password',
+        password: 'root',
         database: 'mydb'
     });
     return database;
 }
 
 function dropTablesAndInsertDummyData(){
-    database.query("DROP TABLE account_customer");
-    database.query("DROP TABLE account");
-    database.query("DROP TABLE customer");
-    database.query("DROP TABLE agent");
-    database.query("DROP TABLE account_critical");
+    database.query("DROP TABLE IF EXISTS account_customer");
+    database.query("DROP TABLE IF EXISTS account");
+    database.query("DROP TABLE IF EXISTS customer");
+    database.query("DROP TABLE IF EXISTS agent");
+    database.query("DROP TABLE IF EXISTS account_critical");
 
     database.query("CREATE TABLE account(number INT, balance FLOAT NOT NULL, joint BOOLEAN NOT NULL, registered BOOLEAN NOT NULL, PRIMARY KEY (number));");
     database.query("CREATE TABLE agent(agentID VARCHAR(20), name VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, PRIMARY KEY (agentID));");

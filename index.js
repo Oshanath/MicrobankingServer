@@ -19,12 +19,12 @@ app.get('/syncAgent/:agentID', function (req, res) {
    database.query(`SELECT * FROM account_customer NATURAL JOIN customer NATURAL JOIN account NATURAL JOIN account_critical WHERE agentID="${agentID}" AND account.registered=true;`, 
    (err, result) => {
       console.log(result);
-      res.send(result);
+      res.send(JSON.stringify(result));
    });
 });
 
 // Express server
-var server = app.listen(8081, function () {
+var server = app.listen(8083, function () {
    var host = server.address().address
    var port = server.address().port
    
