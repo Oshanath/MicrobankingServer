@@ -11,17 +11,7 @@ function createConnection() {
     return database;
 }
 
-async function countAccounts() {
-    var a;
-    database.query("SELECT count(*) from account;",
-        (err, result) => {
-            //console.log(result);
-            a = result[0][`count(*)`];
-            return a;
-        });
 
-    return a;
-}
 
 async function calculateInterests() {
 
@@ -30,24 +20,30 @@ async function calculateInterests() {
         (err, result) => {
             numberOFAcoounts = result[0][`count(*)`];
 
-            database.query(`SELECT number,balance from account;`,
+            database.query(`SELECT number,balance,type from account;`,
                 (err, resultAllAccounts) => {
                     for (let i = 0; i < numberOFAcoounts; i++) {
                         let balance;
                         let num;
+                        let acType;
+
                         balance = resultAllAccounts[i][`balance`];
                         num = resultAllAccounts[i][`number`];
-                        if (balance >= 500) {
+                        acType = resultAllAccounts[i][`type`];
+                        if(!acType.localeCompare(`child`)){
                             balance += balance * 0.12;
-                        } else if (balance >= 1000) {
+                            //console.log(balance);
+                        }else if (!acType.localeCompare(`teen`) && balance >= 500) {
+                            balance += balance * 0.11;
+                        } else if (!acType.localeCompare(`adult`) && balance >= 1000) {
                             balance += balance * 0.1;
-                        } else if (balance >= 1000) {
+                        } else if (!acType.localeCompare(`senior`) && balance >= 1000) {
                             balance += balance * 0.13;
-                        } else if (balance >= 5000) {
+                        } else if (!acType.localeCompare(`joint`) && balance >= 5000) {
                             balance += balance * 0.07;
                         }
                         
-                        database.query(`UPDATE account SET balance = ${balance} where number = ${num} `);
+                        database.query(`UPDATE account SET balance = ${balance} where number = ${num};`);
 
                     }
 
@@ -56,7 +52,11 @@ async function calculateInterests() {
         });
 
 
-
+    database.query(`SELECT number,balance,type from account;`,
+    (err, result3) => {
+       console.log(result3);
+    });
+    
 
 
 }
@@ -127,7 +127,7 @@ function dropTablesAndInsertDummyData() {
     database.query("INSERT INTO account_critical VALUES(23580987, true);");
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
 
-    calculateInterests();
+    
 }
 
 
