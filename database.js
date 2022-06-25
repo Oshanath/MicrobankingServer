@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 let database = null;
 
-function createConnection(){
+function createConnection() {
     database = mysql.createConnection({
         host: 'localhost',
         user: 'root',
@@ -11,7 +11,57 @@ function createConnection(){
     return database;
 }
 
-function dropTablesAndInsertDummyData(){
+async function countAccounts() {
+    var a;
+    database.query("SELECT count(*) from account;",
+        (err, result) => {
+            //console.log(result);
+            a = result[0][`count(*)`];
+            return a;
+        });
+
+    return a;
+}
+
+async function calculateInterests() {
+
+    let numberOFAcoounts;
+    database.query("SELECT count(*) from account;",
+        (err, result) => {
+            numberOFAcoounts = result[0][`count(*)`];
+
+            database.query(`SELECT number,balance from account;`,
+                (err, resultAllAccounts) => {
+                    for (let i = 0; i < numberOFAcoounts; i++) {
+                        let balance;
+                        let num;
+                        balance = resultAllAccounts[i][`balance`];
+                        num = resultAllAccounts[i][`number`];
+                        if (balance >= 500) {
+                            balance += balance * 0.12;
+                        } else if (balance >= 1000) {
+                            balance += balance * 0.1;
+                        } else if (balance >= 1000) {
+                            balance += balance * 0.13;
+                        } else if (balance >= 5000) {
+                            balance += balance * 0.07;
+                        }
+                        
+                        database.query(`UPDATE account SET balance = ${balance} where number = ${num} `);
+
+                    }
+
+                });
+
+        });
+
+
+
+
+
+}
+
+function dropTablesAndInsertDummyData() {
     database.query("DROP TABLE IF EXISTS account_customer");
     database.query("DROP TABLE IF EXISTS account");
     database.query("DROP TABLE IF EXISTS customer");
@@ -62,6 +112,8 @@ function dropTablesAndInsertDummyData(){
     database.query("INSERT INTO account_critical VALUES(16683568, false);");
     database.query("INSERT INTO account_critical VALUES(23580987, true);");
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
+
+    calculateInterests();
 }
 
 
