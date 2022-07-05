@@ -12,7 +12,6 @@ function createConnection() {
 }
 
 
-
 async function calculateInterests() {
 
     let numberOFAcoounts;
@@ -30,10 +29,10 @@ async function calculateInterests() {
                         balance = resultAllAccounts[i][`balance`];
                         num = resultAllAccounts[i][`number`];
                         acType = resultAllAccounts[i][`type`];
-                        if(!acType.localeCompare(`child`)){
+                        if (!acType.localeCompare(`child`)) {
                             balance += balance * 0.12;
                             //console.log(balance);
-                        }else if (!acType.localeCompare(`teen`) && balance >= 500) {
+                        } else if (!acType.localeCompare(`teen`) && balance >= 500) {
                             balance += balance * 0.11;
                         } else if (!acType.localeCompare(`adult`) && balance >= 1000) {
                             balance += balance * 0.1;
@@ -42,7 +41,7 @@ async function calculateInterests() {
                         } else if (!acType.localeCompare(`joint`) && balance >= 5000) {
                             balance += balance * 0.07;
                         }
-                        
+
                         database.query(`UPDATE account SET balance = ${balance} where number = ${num};`);
 
                     }
@@ -53,10 +52,10 @@ async function calculateInterests() {
 
 
     database.query(`SELECT number,balance,type from account;`,
-    (err, result3) => {
-       console.log(result3);
-    });
-    
+        (err, result3) => {
+            console.log(result3);
+        });
+
 
 
 }
@@ -68,6 +67,7 @@ function dropTablesAndInsertDummyData() {
     database.query("DROP TABLE IF EXISTS customer");
     database.query("DROP TABLE IF EXISTS agent");
     database.query("DROP TABLE IF EXISTS account_critical");
+    database.query("DROP PROCEDURE IF EXISTS calculateInterests");
 
     database.query("CREATE TABLE account(number INT, balance FLOAT NOT NULL, type VARCHAR(10) NOT NULL, PRIMARY KEY (number));");
     database.query("CREATE TABLE agent(agentID VARCHAR(20), name VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, PRIMARY KEY (agentID));");
@@ -76,7 +76,44 @@ function dropTablesAndInsertDummyData() {
     database.query("CREATE TABLE account_critical(number INT, critical BOOLEAN);");
     database.query("CREATE TABLE account_registered(number INT, registered BOOLEAN NOT NULL, FOREIGN KEY (number) REFERENCES account(number));");
 
-    // Functions and procedures
+    //Functions and procedures
+    database.query(`
+            
+            CREATE PROCEDURE calculateInterests()
+            BEGIN
+                DECLARE num INT DEFAULT 0;
+                DECLARE bal FLOAT DEFAULT 0.0;
+                DECLARE type VARCHAR(10) DEFAULT "";
+
+                DECLARE bdone INT;
+
+                DECLARE curs CURSOR FOR SELECT number,balance,type FROM account;
+                DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
+
+                OPEN curs;
+
+                SET bdone=0;
+                REPEAT
+                    FETCH curs INTO num,bal,type;
+
+                    IF type = 'child' THEN
+                        set bal = bal * 0.12;
+                    ELSEIF type = 'teen' AND bal >= 500 THEN
+                        set bal = bal * 0.11;
+                    ELSEIF type = 'adult' AND bal >= 1000 THEN
+                        set bal = bal * 0.1;
+                    ELSEIF type = 'senior' AND bal >= 1000 THEN
+                        set bal = bal * 0.13;
+                    ELSEIF type = 'joint' AND bal >= 5000 THEN
+                        set bal = bal * 0.07;
+                    END IF;
+
+                    UPDATE account SET balance = bal WHERE number = num;
+                        
+                UNTIL bdone END REPEAT;
+                CLOSE curs;
+                
+            END; `);
 
     database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
     database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
@@ -127,7 +164,7 @@ function dropTablesAndInsertDummyData() {
     database.query("INSERT INTO account_critical VALUES(23580987, true);");
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
 
-    
+
 }
 
 
