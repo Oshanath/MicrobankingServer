@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 let database = null;
 
-function createConnection(){
+function createConnection() {
     database = mysql.createConnection({
         host: 'localhost',
         user: 'root',
@@ -11,76 +11,105 @@ function createConnection(){
     return database;
 }
 
-function dropTablesAndInsertDummyData(){
-    database.query(`DROP TABLE IF EXISTS account_customer;`);
-    database.query(`DROP TABLE IF EXISTS account_registered;`);
-    database.query(`DROP TABLE IF EXISTS account_critical;`);
-    database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
-    database.query(`DROP TABLE IF EXISTS account;`);
-    database.query(`DROP TABLE IF EXISTS customer;`);
-    database.query(`DROP TABLE IF EXISTS agent;`);
+async function calculateInterests() {
 
-    database.query(`DROP TABLE IF EXISTS manager;`)
+    let numberOFAcoounts;
+    database.query("SELECT count(*) from account;",
+        (err, result) => {
+            numberOFAcoounts = result[0][`count(*)`];
 
-    database.query(`CREATE TABLE account(
-        number INT, 
-        balance NUMERIC(12,2) NOT NULL, 
-        type VARCHAR(10) NOT NULL, 
-        PRIMARY KEY (number),
-        CHECK(type in ("child", "teen", "adult", "senior", "joint"))
-    );`);
+            database.query(`SELECT number,balance,type from account;`,
+                (err, resultAllAccounts) => {
+                    for (let i = 0; i < numberOFAcoounts; i++) {
+                        let balance;
+                        let num;
+                        let acType;
 
-    database.query(`CREATE TABLE agent(
-        agentID VARCHAR(20), 
-        name VARCHAR(50) NOT NULL, 
-        password VARCHAR(50) NOT NULL, 
-        PRIMARY KEY (agentID)
-    );`);
+                        balance = resultAllAccounts[i][`balance`];
+                        num = resultAllAccounts[i][`number`];
+                        acType = resultAllAccounts[i][`type`];
+                        if (!acType.localeCompare(`child`)) {
+                            balance += balance * 0.12;
+                            //console.log(balance);
+                        } else if (!acType.localeCompare(`teen`) && balance >= 500) {
+                            balance += balance * 0.11;
+                        } else if (!acType.localeCompare(`adult`) && balance >= 1000) {
+                            balance += balance * 0.1;
+                        } else if (!acType.localeCompare(`senior`) && balance >= 1000) {
+                            balance += balance * 0.13;
+                        } else if (!acType.localeCompare(`joint`) && balance >= 5000) {
+                            balance += balance * 0.07;
+                        }
 
-    database.query(`CREATE TABLE customer(
-        nic VARCHAR(20), 
-        name VARCHAR(50) NOT NULL, 
-        agentID VARCHAR(20) NOT NULL,
-        PRIMARY KEY (nic), 
-        FOREIGN KEY (agentID) references agent(agentID)
-    );`);
+                        database.query(`UPDATE account SET balance = ${balance} where number = ${num};`);
 
-    database.query(`CREATE TABLE account_customer(
-        number INT, 
-        nic VARCHAR(20), 
-        FOREIGN KEY (number) REFERENCES account(number), 
-        FOREIGN KEY (nic) REFERENCES customer(nic)
-    );`);
+                    }
 
-    database.query(`CREATE TABLE account_critical(
-        number INT, 
-        critical BOOLEAN,
-        FOREIGN KEY (number) REFERENCES account(number)
-    );`);
+                });
 
-    database.query(`CREATE TABLE account_registered(
-        number INT, 
-        registered BOOLEAN NOT NULL, 
-        FOREIGN KEY (number) REFERENCES account(number)
-    );`);
+        });
 
-    database.query(`CREATE TABLE fixed_deposit(
-        fd_number INT NOT NULL, 
-        number INT NOT NULL,
-        amount float NOT NULL,
-        plan VARCHAR(10) NOT NULL,
-        PRIMARY KEY (fd_number),
-        FOREIGN KEY (number) REFERENCES account(number),
-        CHECK(plan in ("1y", "3y", "6m"))
-    );`);
 
-    database.query(`CREATE TABLE manager(
-        username VARCHAR(20) NOT NULL,
-        password VARCHAR(50) NOT NULL,
-        PRIMARY KEY (username)
-    )`);
+    database.query(`SELECT number,balance,type from account;`,
+        (err, result3) => {
+            console.log(result3);
+        });
+}
 
-    // Functions and procedures
+function dropTablesAndInsertDummyData() {
+    database.query("DROP TABLE IF EXISTS account_customer");
+    database.query("DROP TABLE IF EXISTS account_registered");
+    database.query("DROP TABLE IF EXISTS account");
+    database.query("DROP TABLE IF EXISTS customer");
+    database.query("DROP TABLE IF EXISTS agent");
+    database.query("DROP TABLE IF EXISTS account_critical");
+    database.query("DROP PROCEDURE IF EXISTS calculateInterests");
+
+    database.query("CREATE TABLE account(number INT, balance FLOAT NOT NULL, type VARCHAR(10) NOT NULL, PRIMARY KEY (number));");
+    database.query("CREATE TABLE agent(agentID VARCHAR(20), name VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, PRIMARY KEY (agentID));");
+    database.query("CREATE TABLE customer(nic VARCHAR(20), name VARCHAR(50) NOT NULL, agentID VARCHAR(20) NOT NULL, PRIMARY KEY (nic), FOREIGN KEY (agentID) references agent(agentID));");
+    database.query("CREATE TABLE account_customer(number INT, nic VARCHAR(20), FOREIGN KEY (number) REFERENCES account(number), FOREIGN KEY (nic) REFERENCES customer(nic));");
+    database.query("CREATE TABLE account_critical(number INT, critical BOOLEAN);");
+    database.query("CREATE TABLE account_registered(number INT, registered BOOLEAN NOT NULL, FOREIGN KEY (number) REFERENCES account(number));");
+
+    //Functions and procedures
+    database.query(`
+            
+    CREATE PROCEDURE calculateInterests()
+    BEGIN
+        DECLARE num INT DEFAULT 0;
+        DECLARE bal NUMERIC(12,2) DEFAULT 0.00;
+        DECLARE acType VARCHAR(10) DEFAULT "";
+
+        DECLARE bdone INT;
+
+        DECLARE curs CURSOR FOR SELECT number,balance,type FROM account;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
+
+        OPEN curs;
+
+        SET bdone=0;
+        REPEAT
+            FETCH curs INTO num,bal,acType;
+
+            IF acType = 'child' THEN
+                set bal = bal * 0.12;
+            ELSEIF acType = 'teen' AND bal >= 500 THEN
+                set bal = bal * 0.11;
+            ELSEIF acType = 'adult' AND bal >= 1000 THEN
+                set bal = bal * 0.1;
+            ELSEIF acType = 'senior' AND bal >= 1000 THEN
+                set bal = bal * 0.13;
+            ELSEIF acType = 'joint' AND bal >= 5000 THEN
+                set bal = bal * 0.07;
+            END IF;
+
+            UPDATE account SET balance = bal WHERE number = num;
+                
+        UNTIL bdone END REPEAT;
+        CLOSE curs;
+        
+    END; `);
 
     database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
     database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
@@ -103,51 +132,36 @@ function dropTablesAndInsertDummyData(){
     database.query(`INSERT INTO account_registered VALUES(10885446, true);`);
     database.query(`INSERT INTO account_registered VALUES(65584445, false);`);
     database.query(`INSERT INTO account_registered VALUES(78654555, false);`);
+    
+    database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", \"password\");");
+    database.query("INSERT INTO agent VALUES(\"190564L\", \"Rajawasam\", \"password\");");
 
-    database.query(`INSERT INTO agent VALUES("190488J", "Oshanath", "password");`);
-    database.query(`INSERT INTO agent VALUES("190564L", "Rajawasam", "password");`);
+    database.query("INSERT INTO customer VALUES(\"991741135v\", \"Lasith\", \"190488J\");");
+    database.query("INSERT INTO customer VALUES(\"246757377f\", \"Ravindu\", \"190488J\");");
+    database.query("INSERT INTO customer VALUES(\"34634g575jj\", \"Thilina\", \"190564L\");");
+    database.query("INSERT INTO customer VALUES(\"rsgrrd44646\", \"Madaya\", \"190564L\");");
 
-    database.query(`INSERT INTO customer VALUES("991741135v", "Lasith", "190488J");`);
-    database.query(`INSERT INTO customer VALUES("246757377f", "Ravindu", "190488J");`);
-    database.query(`INSERT INTO customer VALUES("34634g575jj", "Thilina", "190564L");`);
-    database.query(`INSERT INTO customer VALUES("rsgrrd44646", "Madaya", "190564L");`);
+    database.query("INSERT INTO account_customer VALUES(12332555, \"991741135v\");"); // joint lasith ravindu
+    database.query("INSERT INTO account_customer VALUES(12332555, \"246757377f\");"); // joint lasith ravindu
+    database.query("INSERT INTO account_customer VALUES(65468467, \"991741135v\");");
+    database.query("INSERT INTO account_customer VALUES(34635764, \"991741135v\");");
+    database.query("INSERT INTO account_customer VALUES(33455546, \"246757377f\");");
+    database.query("INSERT INTO account_customer VALUES(45673858, \"246757377f\");");
+    database.query("INSERT INTO account_customer VALUES(09887755, \"34634g575jj\");");
+    database.query("INSERT INTO account_customer VALUES(09887755, \"rsgrrd44646\");");
 
-    database.query(`INSERT INTO account_customer VALUES(12332555, "991741135v");`); // joint lasith ravindu
-    database.query(`INSERT INTO account_customer VALUES(12332555, "246757377f");`); // joint lasith ravindu
-    database.query(`INSERT INTO account_customer VALUES(65468467, "991741135v");`);
-    database.query(`INSERT INTO account_customer VALUES(34635764, "991741135v");`);
-    database.query(`INSERT INTO account_customer VALUES(33455546, "246757377f");`);
-    database.query(`INSERT INTO account_customer VALUES(45673858, "246757377f");`);
-    database.query(`INSERT INTO account_customer VALUES(09887755, "34634g575jj");`);
-    database.query(`INSERT INTO account_customer VALUES(09887755, "rsgrrd44646");`);
+    database.query("INSERT INTO account_critical VALUES(12332555, true);");
+    database.query("INSERT INTO account_critical VALUES(34635764, false);");
+    database.query("INSERT INTO account_critical VALUES(33455546, false);");
+    database.query("INSERT INTO account_critical VALUES(85469699, true);");
+    database.query("INSERT INTO account_critical VALUES(45673858, false);");
+    database.query("INSERT INTO account_critical VALUES(09887755, false);");
+    database.query("INSERT INTO account_critical VALUES(16683568, false);");
+    database.query("INSERT INTO account_critical VALUES(23580987, true);");
+    database.query("INSERT INTO account_critical VALUES(10885446, false);");
 
-    database.query(`INSERT INTO account_critical VALUES(12332555, true);`);
-    database.query(`INSERT INTO account_critical VALUES(34635764, false);`);
-    database.query(`INSERT INTO account_critical VALUES(33455546, false);`);
-    database.query(`INSERT INTO account_critical VALUES(85469699, true);`);
-    database.query(`INSERT INTO account_critical VALUES(45673858, false);`);
-    database.query(`INSERT INTO account_critical VALUES(09887755, false);`);
-    database.query(`INSERT INTO account_critical VALUES(16683568, false);`);
-    database.query(`INSERT INTO account_critical VALUES(23580987, true);`);
-    database.query(`INSERT INTO account_critical VALUES(10885446, false);`);
+    database.query("CALL calculateInterests();");
 
-    database.query(`INSERT INTO account_registered VALUES(12332555, true);`);
-    database.query(`INSERT INTO account_registered VALUES(34635764, true);`);
-    database.query(`INSERT INTO account_registered VALUES(33455546, true);`);
-    database.query(`INSERT INTO account_registered VALUES(85469699, true);`);
-    database.query(`INSERT INTO account_registered VALUES(45673858, true);`);
-    database.query(`INSERT INTO account_registered VALUES(09887755, true);`);
-    database.query(`INSERT INTO account_registered VALUES(16683568, true);`);
-    database.query(`INSERT INTO account_registered VALUES(23580987, true);`);
-    database.query(`INSERT INTO account_registered VALUES(10885446, true);`);
-
-    database.query(`INSERT INTO fixed_deposit VALUES(87645884, 45673858, 45000.0, "3y");`);
-    database.query(`INSERT INTO fixed_deposit VALUES(25647658, 16683568, 100000.0, "1y");`);
-    database.query(`INSERT INTO fixed_deposit VALUES(08765778, 23580987, 50000.0, "3y");`);
-    database.query(`INSERT INTO fixed_deposit VALUES(17784467, 10885446, 750000.0, "6m");`);
-    database.query(`INSERT INTO fixed_deposit VALUES(56667446, 65584445, 130000.0, "6m");`);
-
-    database.query(`INSERT INTO manager VALUES("q", "q");`);
 }
 
 
