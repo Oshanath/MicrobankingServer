@@ -4,13 +4,16 @@ var bodyParser = require('body-parser');
 
 var app = express();
 var jsonParser = bodyParser.json()
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
+// var urlencodedParser = bodyParser.urlencoded({ extended: false })
+app.use(bodyParser.urlencoded({
+   extended: true
+ }));
 
 app.get('/', function (req, res) {
    res.render('signin.ejs');
 });
 
-app.post('/signin', urlencodedParser, function (req, res) {
+app.post('/signin', function (req, res) {
    let username = req.body.username;
    let password = req.body.password;
 
@@ -31,6 +34,7 @@ app.post('/signin', urlencodedParser, function (req, res) {
 
 app.get('/syncAgent/:agentID', function (req, res) {
    let agentID = req.params.agentID;
+   console.log("sync agent");
 
    database.query(`SELECT * FROM
       account INNER JOIN account_registered USING(number)
@@ -42,7 +46,8 @@ app.get('/syncAgent/:agentID', function (req, res) {
    });
 });
 
-app.get(`/critialVerify`, function(req, res){
+app.post(`/criticalVerify`, function(req, res){
+   console.log("critical verify");
    console.log(req.body);
    res.send(req.body);
 });
