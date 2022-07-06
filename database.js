@@ -24,7 +24,7 @@ function dropTablesAndInsertDummyData(){
 
     database.query(`CREATE TABLE account(
         number INT, 
-        balance FLOAT NOT NULL, 
+        balance NUMERIC(12,2) NOT NULL, 
         type VARCHAR(10) NOT NULL, 
         PRIMARY KEY (number),
         CHECK(type in ("child", "teen", "adult", "senior", "joint"))
@@ -130,6 +130,16 @@ function dropTablesAndInsertDummyData(){
     database.query(`INSERT INTO account_critical VALUES(16683568, false);`);
     database.query(`INSERT INTO account_critical VALUES(23580987, true);`);
     database.query(`INSERT INTO account_critical VALUES(10885446, false);`);
+
+    database.query(`INSERT INTO account_registered VALUES(12332555, true);`);
+    database.query(`INSERT INTO account_registered VALUES(34635764, true);`);
+    database.query(`INSERT INTO account_registered VALUES(33455546, true);`);
+    database.query(`INSERT INTO account_registered VALUES(85469699, true);`);
+    database.query(`INSERT INTO account_registered VALUES(45673858, true);`);
+    database.query(`INSERT INTO account_registered VALUES(09887755, true);`);
+    database.query(`INSERT INTO account_registered VALUES(16683568, true);`);
+    database.query(`INSERT INTO account_registered VALUES(23580987, true);`);
+    database.query(`INSERT INTO account_registered VALUES(10885446, true);`);
 
     database.query(`INSERT INTO fixed_deposit VALUES(87645884, 45673858, 45000.0, "3y");`);
     database.query(`INSERT INTO fixed_deposit VALUES(25647658, 16683568, 100000.0, "1y");`);
