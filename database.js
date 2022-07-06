@@ -55,23 +55,21 @@ async function calculateInterests() {
         (err, result3) => {
             console.log(result3);
         });
-
-
-
 }
 
 function dropTablesAndInsertDummyData() {
-database.query(`DROP TABLE IF EXISTS account_customer;`);
-database.query(`DROP TABLE IF EXISTS account_registered;`);
-database.query(`DROP TABLE IF EXISTS account_critical;`);
-database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
-database.query(`DROP TABLE IF EXISTS account;`);
-database.query(`DROP TABLE IF EXISTS customer;`);
-database.query(`DROP TABLE IF EXISTS agent;`);
+    database.query(`DROP TABLE IF EXISTS account_customer;`);
+    database.query(`DROP TABLE IF EXISTS account_registered;`);
+    database.query(`DROP TABLE IF EXISTS account_critical;`);
+    database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
+    database.query(`DROP TABLE IF EXISTS account;`);
+    database.query(`DROP TABLE IF EXISTS customer;`);
+    database.query(`DROP TABLE IF EXISTS agent;`);
 
-database.query(`DROP TABLE IF EXISTS manager;`)
+    database.query(`DROP TABLE IF EXISTS manager;`)
 
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
+    database.query("DROP PROCEDURE IF EXISTS calFDInterests");
 
     database.query(`CREATE TABLE account(
         number INT, 
@@ -80,58 +78,58 @@ database.query(`DROP TABLE IF EXISTS manager;`)
         PRIMARY KEY (number),
         CHECK(type in ("child", "teen", "adult", "senior", "joint"))
     );`);
-        
-        database.query(`CREATE TABLE agent(
+
+    database.query(`CREATE TABLE agent(
         agentID VARCHAR(20), 
         name VARCHAR(50) NOT NULL, 
         password VARCHAR(50) NOT NULL, 
         PRIMARY KEY (agentID)
     );`);
-        
-        database.query(`CREATE TABLE customer(
+
+    database.query(`CREATE TABLE customer(
         nic VARCHAR(20), 
         name VARCHAR(50) NOT NULL, 
         agentID VARCHAR(20) NOT NULL,
         PRIMARY KEY (nic), 
         FOREIGN KEY (agentID) references agent(agentID)
     );`);
-        
-        database.query(`CREATE TABLE account_customer(
+
+    database.query(`CREATE TABLE account_customer(
         number INT, 
         nic VARCHAR(20), 
         FOREIGN KEY (number) REFERENCES account(number), 
         FOREIGN KEY (nic) REFERENCES customer(nic)
     );`);
-        
-        database.query(`CREATE TABLE account_critical(
+
+    database.query(`CREATE TABLE account_critical(
         number INT, 
         critical BOOLEAN,
         FOREIGN KEY (number) REFERENCES account(number)
     );`);
-        
-        database.query(`CREATE TABLE account_registered(
+
+    database.query(`CREATE TABLE account_registered(
         number INT, 
         registered BOOLEAN NOT NULL, 
         FOREIGN KEY (number) REFERENCES account(number)
     );`);
-        
-        database.query(`CREATE TABLE fixed_deposit(
+
+    database.query(`CREATE TABLE fixed_deposit(
         fd_number INT NOT NULL, 
         number INT NOT NULL,
-        amount float NOT NULL,
+        amount NUMERIC(12,2) NOT NULL,
         plan VARCHAR(10) NOT NULL,
         PRIMARY KEY (fd_number),
         FOREIGN KEY (number) REFERENCES account(number),
         CHECK(plan in ("1y", "3y", "6m"))
     );`);
-        
-        database.query(`CREATE TABLE manager(
+
+    database.query(`CREATE TABLE manager(
         username VARCHAR(20) NOT NULL,
         password VARCHAR(50) NOT NULL,
         PRIMARY KEY (username)
     )`);
-        
-        // Functions and procedures
+
+    // Functions and procedures
     database.query(`
             
     CREATE PROCEDURE calculateInterests()
@@ -169,6 +167,43 @@ database.query(`DROP TABLE IF EXISTS manager;`)
         CLOSE curs;
         
     END; `);
+
+    database.query(`
+    CREATE PROCEDURE calFDInterests()
+    BEGIN
+        DECLARE num INT DEFAULT 0;
+        DECLARE fdAmount NUMERIC(12,2) DEFAULT 0.00;
+        DECLARE fdType VARCHAR(10) DEFAULT "";
+        DECLARE acBalance NUMERIC(12,2) DEFAULT 0.00;
+
+        DECLARE bdone INT;
+
+        DECLARE curs CURSOR FOR SELECT distinct number,amount,plan FROM fixed_deposit;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
+
+        OPEN curs;
+
+        SET bdone=0;
+        REPEAT
+            FETCH curs INTO num,fdAmount,fdType;
+            SELECT balance INTO acBalance FROM account WHERE number = num;
+
+            IF fdType = '1y' THEN
+                SET acBalance = acBalance + fdAmount * 0.14 / 12;
+            ELSEIF fdType = '3y' THEN
+                SET acBalance = acBalance + fdAmount * 0.15 / 12;
+            ELSEIF fdType = '6m' THEN
+                SET acBalance = acBalance + fdAmount * 0.13 / 12;
+            END IF;
+            
+            UPDATE account SET balance = acBalance WHERE number = num;
+            
+
+        UNTIL bdone END REPEAT;
+        CLOSE curs;
+    
+    
+    END`);
 
     database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
     database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
@@ -219,11 +254,18 @@ database.query(`DROP TABLE IF EXISTS manager;`)
     database.query("INSERT INTO account_critical VALUES(23580987, true);");
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
 
-    database.query("CALL calculateInterests();");
+    database.query("INSERT INTO fixed_deposit VALUES(153728135, 65468467, 50000.00, '1y');");
+    database.query("INSERT INTO fixed_deposit VALUES(123543148, 85469699, 25000.00, '3y');");
+    database.query("INSERT INTO fixed_deposit VALUES(345135103, 45673858, 25000.00, '3y');");
+    database.query("INSERT INTO fixed_deposit VALUES(145134502, 65584445, 60000.00, '1y');");
+    database.query("INSERT INTO fixed_deposit VALUES(123514613, 10885446, 30000.00, '6m');");
+    database.query("INSERT INTO fixed_deposit VALUES(234325123, 78654555, 15000.00, '3y');");
 
+    //database.query("CALL calculateInterests();");
+    database.query("CALL calFDInterests();");
 
 }
- 
+
 module.exports = {
     createConnection,
     dropTablesAndInsertDummyData
