@@ -1,10 +1,23 @@
 var express = require('express');
 const db = require("./database");
 var bodyParser = require('body-parser');
+var crypto = require('crypto');
 
 var app = express();
 var jsonParser = bodyParser.json()
 // var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+function hash(string){
+   var hash = crypto.createHash('sha256').update(string).digest('base256');
+   let s = "";
+
+   for(let i = 0; i < hash.length; i++){
+      s += String.fromCharCode(hash[i]);
+   }
+
+   return s;
+}
+
 app.use(bodyParser.urlencoded({
    extended: true
  }));
