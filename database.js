@@ -11,7 +11,6 @@ function createConnection() {
     return database;
 }
 
-
 async function calculateInterests() {
 
     let numberOFAcoounts;
@@ -55,9 +54,6 @@ async function calculateInterests() {
         (err, result3) => {
             console.log(result3);
         });
-
-
-
 }
 
 function dropTablesAndInsertDummyData() {
@@ -136,7 +132,7 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_registered VALUES(10885446, true);`);
     database.query(`INSERT INTO account_registered VALUES(65584445, false);`);
     database.query(`INSERT INTO account_registered VALUES(78654555, false);`);
-
+    
     database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", \"password\");");
     database.query("INSERT INTO agent VALUES(\"190564L\", \"Rajawasam\", \"password\");");
 
@@ -165,7 +161,6 @@ function dropTablesAndInsertDummyData() {
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
 
     database.query("CALL calculateInterests();");
-
 
 }
 

@@ -32,14 +32,19 @@ app.post('/signin', urlencodedParser, function (req, res) {
 app.get('/syncAgent/:agentID', function (req, res) {
    let agentID = req.params.agentID;
 
-   // Select all customers where agent = agentId
-   // Select all the registered accounts of thoses customers
-   database.query(`SELECT * FROM account_customer NATURAL JOIN customer NATURAL JOIN account NATURAL JOIN
-                   account_critical WHERE agentID="${agentID}" AND account.registered=true;`, 
+   database.query(`SELECT DISTINCT * FROM
+      account INNER JOIN account_registered USING(number)
+      INNER JOIN account_customer USING(number) 
+      INNER JOIN customer USING(nic) 
+      where registered = true;`, 
    (err, result) => {
-      console.log(result);
       res.send(JSON.stringify(result));
    });
+});
+
+app.get(`/critialVerify`, function(req, res){
+   console.log(req.body);
+   res.send(req.body);
 });
 
 // Express server
