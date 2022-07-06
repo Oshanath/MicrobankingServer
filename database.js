@@ -57,22 +57,77 @@ async function calculateInterests() {
 }
 
 function dropTablesAndInsertDummyData() {
-    database.query("DROP TABLE IF EXISTS account_customer");
-    database.query("DROP TABLE IF EXISTS account_registered");
-    database.query("DROP TABLE IF EXISTS account");
-    database.query("DROP TABLE IF EXISTS customer");
-    database.query("DROP TABLE IF EXISTS agent");
-    database.query("DROP TABLE IF EXISTS account_critical");
+database.query(`DROP TABLE IF EXISTS account_customer;`);
+database.query(`DROP TABLE IF EXISTS account_registered;`);
+database.query(`DROP TABLE IF EXISTS account_critical;`);
+database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
+database.query(`DROP TABLE IF EXISTS account;`);
+database.query(`DROP TABLE IF EXISTS customer;`);
+database.query(`DROP TABLE IF EXISTS agent;`);
+
+database.query(`DROP TABLE IF EXISTS manager;`)
+
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
 
-    database.query("CREATE TABLE account(number INT, balance FLOAT NOT NULL, type VARCHAR(10) NOT NULL, PRIMARY KEY (number));");
-    database.query("CREATE TABLE agent(agentID VARCHAR(20), name VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, PRIMARY KEY (agentID));");
-    database.query("CREATE TABLE customer(nic VARCHAR(20), name VARCHAR(50) NOT NULL, agentID VARCHAR(20) NOT NULL, PRIMARY KEY (nic), FOREIGN KEY (agentID) references agent(agentID));");
-    database.query("CREATE TABLE account_customer(number INT, nic VARCHAR(20), FOREIGN KEY (number) REFERENCES account(number), FOREIGN KEY (nic) REFERENCES customer(nic));");
-    database.query("CREATE TABLE account_critical(number INT, critical BOOLEAN);");
-    database.query("CREATE TABLE account_registered(number INT, registered BOOLEAN NOT NULL, FOREIGN KEY (number) REFERENCES account(number));");
-
-    //Functions and procedures
+    database.query(`CREATE TABLE account(
+        number INT, 
+        balance NUMERIC(12,2) NOT NULL, 
+        type VARCHAR(10) NOT NULL, 
+        PRIMARY KEY (number),
+        CHECK(type in ("child", "teen", "adult", "senior", "joint"))
+    );`);
+        
+        database.query(`CREATE TABLE agent(
+        agentID VARCHAR(20), 
+        name VARCHAR(50) NOT NULL, 
+        password VARCHAR(50) NOT NULL, 
+        PRIMARY KEY (agentID)
+    );`);
+        
+        database.query(`CREATE TABLE customer(
+        nic VARCHAR(20), 
+        name VARCHAR(50) NOT NULL, 
+        agentID VARCHAR(20) NOT NULL,
+        PRIMARY KEY (nic), 
+        FOREIGN KEY (agentID) references agent(agentID)
+    );`);
+        
+        database.query(`CREATE TABLE account_customer(
+        number INT, 
+        nic VARCHAR(20), 
+        FOREIGN KEY (number) REFERENCES account(number), 
+        FOREIGN KEY (nic) REFERENCES customer(nic)
+    );`);
+        
+        database.query(`CREATE TABLE account_critical(
+        number INT, 
+        critical BOOLEAN,
+        FOREIGN KEY (number) REFERENCES account(number)
+    );`);
+        
+        database.query(`CREATE TABLE account_registered(
+        number INT, 
+        registered BOOLEAN NOT NULL, 
+        FOREIGN KEY (number) REFERENCES account(number)
+    );`);
+        
+        database.query(`CREATE TABLE fixed_deposit(
+        fd_number INT NOT NULL, 
+        number INT NOT NULL,
+        amount float NOT NULL,
+        plan VARCHAR(10) NOT NULL,
+        PRIMARY KEY (fd_number),
+        FOREIGN KEY (number) REFERENCES account(number),
+        CHECK(plan in ("1y", "3y", "6m"))
+    );`);
+        
+        database.query(`CREATE TABLE manager(
+        username VARCHAR(20) NOT NULL,
+        password VARCHAR(50) NOT NULL,
+        PRIMARY KEY (username)
+    )`);
+        
+        // Functions and procedures
     database.query(`
             
     CREATE PROCEDURE calculateInterests()
