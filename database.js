@@ -79,41 +79,41 @@ function dropTablesAndInsertDummyData() {
     //Functions and procedures
     database.query(`
             
-            CREATE PROCEDURE calculateInterests()
-            BEGIN
-                DECLARE num INT DEFAULT 0;
-                DECLARE bal FLOAT DEFAULT 0.0;
-                DECLARE type VARCHAR(10) DEFAULT "";
+    CREATE PROCEDURE calculateInterests()
+    BEGIN
+        DECLARE num INT DEFAULT 0;
+        DECLARE bal NUMERIC(12,2) DEFAULT 0.00;
+        DECLARE acType VARCHAR(10) DEFAULT "";
 
-                DECLARE bdone INT;
+        DECLARE bdone INT;
 
-                DECLARE curs CURSOR FOR SELECT number,balance,type FROM account;
-                DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
+        DECLARE curs CURSOR FOR SELECT number,balance,type FROM account;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
 
-                OPEN curs;
+        OPEN curs;
 
-                SET bdone=0;
-                REPEAT
-                    FETCH curs INTO num,bal,type;
+        SET bdone=0;
+        REPEAT
+            FETCH curs INTO num,bal,acType;
 
-                    IF type = 'child' THEN
-                        set bal = bal * 0.12;
-                    ELSEIF type = 'teen' AND bal >= 500 THEN
-                        set bal = bal * 0.11;
-                    ELSEIF type = 'adult' AND bal >= 1000 THEN
-                        set bal = bal * 0.1;
-                    ELSEIF type = 'senior' AND bal >= 1000 THEN
-                        set bal = bal * 0.13;
-                    ELSEIF type = 'joint' AND bal >= 5000 THEN
-                        set bal = bal * 0.07;
-                    END IF;
+            IF acType = 'child' THEN
+                set bal = bal * 0.12;
+            ELSEIF acType = 'teen' AND bal >= 500 THEN
+                set bal = bal * 0.11;
+            ELSEIF acType = 'adult' AND bal >= 1000 THEN
+                set bal = bal * 0.1;
+            ELSEIF acType = 'senior' AND bal >= 1000 THEN
+                set bal = bal * 0.13;
+            ELSEIF acType = 'joint' AND bal >= 5000 THEN
+                set bal = bal * 0.07;
+            END IF;
 
-                    UPDATE account SET balance = bal WHERE number = num;
-                        
-                UNTIL bdone END REPEAT;
-                CLOSE curs;
+            UPDATE account SET balance = bal WHERE number = num;
                 
-            END; `);
+        UNTIL bdone END REPEAT;
+        CLOSE curs;
+        
+    END; `);
 
     database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
     database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
@@ -163,6 +163,8 @@ function dropTablesAndInsertDummyData() {
     database.query("INSERT INTO account_critical VALUES(16683568, false);");
     database.query("INSERT INTO account_critical VALUES(23580987, true);");
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
+
+    database.query("CALL calculateInterests();");
 
 
 }
