@@ -32,7 +32,7 @@ app.post('/signin', urlencodedParser, function (req, res) {
 app.get('/syncAgent/:agentID', function (req, res) {
    let agentID = req.params.agentID;
 
-   database.query(`SELECT DISTINCT * FROM
+   database.query(`SELECT * FROM
       account INNER JOIN account_registered USING(number)
       INNER JOIN account_customer USING(number) 
       INNER JOIN customer USING(nic) 
