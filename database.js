@@ -11,6 +11,7 @@ function createConnection() {
     return database;
 }
 
+
 async function calculateInterests() {
 
     let numberOFAcoounts;
@@ -54,6 +55,9 @@ async function calculateInterests() {
         (err, result3) => {
             console.log(result3);
         });
+
+
+
 }
 
 function dropTablesAndInsertDummyData() {
@@ -65,7 +69,7 @@ function dropTablesAndInsertDummyData() {
     database.query("DROP TABLE IF EXISTS account_critical");
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
 
-    database.query("CREATE TABLE account(number INT, balance FLOAT NOT NULL, type VARCHAR(10) NOT NULL, PRIMARY KEY (number));");
+    database.query("CREATE TABLE account(number INT, balance NUMERIC(12,2) NOT NULL, type VARCHAR(10) NOT NULL, PRIMARY KEY (number));");
     database.query("CREATE TABLE agent(agentID VARCHAR(20), name VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, PRIMARY KEY (agentID));");
     database.query("CREATE TABLE customer(nic VARCHAR(20), name VARCHAR(50) NOT NULL, agentID VARCHAR(20) NOT NULL, PRIMARY KEY (nic), FOREIGN KEY (agentID) references agent(agentID));");
     database.query("CREATE TABLE account_customer(number INT, nic VARCHAR(20), FOREIGN KEY (number) REFERENCES account(number), FOREIGN KEY (nic) REFERENCES customer(nic));");
@@ -73,8 +77,7 @@ function dropTablesAndInsertDummyData() {
     database.query("CREATE TABLE account_registered(number INT, registered BOOLEAN NOT NULL, FOREIGN KEY (number) REFERENCES account(number));");
 
     //Functions and procedures
-    database.query(`
-            
+    database.query(`       
     CREATE PROCEDURE calculateInterests()
     BEGIN
         DECLARE num INT DEFAULT 0;
@@ -93,17 +96,17 @@ function dropTablesAndInsertDummyData() {
             FETCH curs INTO num,bal,acType;
 
             IF acType = 'child' THEN
-                set bal = bal * 0.12;
+                set bal = bal + bal * 0.12;
             ELSEIF acType = 'teen' AND bal >= 500 THEN
-                set bal = bal * 0.11;
+                set bal = bal + bal * 0.11;
             ELSEIF acType = 'adult' AND bal >= 1000 THEN
-                set bal = bal * 0.1;
+                set bal = bal + bal * 0.1;
             ELSEIF acType = 'senior' AND bal >= 1000 THEN
-                set bal = bal * 0.13;
+                set bal = bal + bal * 0.13;
             ELSEIF acType = 'joint' AND bal >= 5000 THEN
-                set bal = bal * 0.07;
+                set bal = bal + bal * 0.07;
             END IF;
-
+            
             UPDATE account SET balance = bal WHERE number = num;
                 
         UNTIL bdone END REPEAT;
@@ -132,7 +135,7 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_registered VALUES(10885446, true);`);
     database.query(`INSERT INTO account_registered VALUES(65584445, false);`);
     database.query(`INSERT INTO account_registered VALUES(78654555, false);`);
-    
+
     database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", \"password\");");
     database.query("INSERT INTO agent VALUES(\"190564L\", \"Rajawasam\", \"password\");");
 
@@ -162,10 +165,9 @@ function dropTablesAndInsertDummyData() {
 
     database.query("CALL calculateInterests();");
 
+
 }
-
-
-
+ 
 module.exports = {
     createConnection,
     dropTablesAndInsertDummyData
