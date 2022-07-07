@@ -65,6 +65,13 @@ app.post(`/criticalVerify`, function(req, res){
    res.send(req.body);
 });
 
+app.post(`/criticalTransaction`, function(req, res){
+   console.log("critical Transaction");
+   console.log(req.body);
+   res.send(req.body);
+});
+
+
 // Express server
 var server = app.listen(8083, function () {
    var host = server.address().address
