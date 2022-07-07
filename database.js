@@ -88,9 +88,10 @@ database.query(`DROP TABLE IF EXISTS customer;`);
 database.query(`DROP TABLE IF EXISTS agent;`);
 database.query(`DROP TABLE IF EXISTS area`);
 
-database.query(`DROP TABLE IF EXISTS manager;`)
+    database.query(`DROP TABLE IF EXISTS manager;`)
 
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
+    database.query("DROP PROCEDURE IF EXISTS calFDInterests");
 
     database.query(`CREATE TABLE account(
         number INT, 
@@ -145,7 +146,7 @@ database.query(`DROP TABLE IF EXISTS manager;`)
     database.query(`CREATE TABLE fixed_deposit(
         fd_number INT NOT NULL, 
         number INT NOT NULL,
-        amount float NOT NULL,
+        amount NUMERIC(12,2) NOT NULL,
         plan VARCHAR(10) NOT NULL,
         PRIMARY KEY (fd_number),
         FOREIGN KEY (number) REFERENCES account(number),
@@ -186,23 +187,60 @@ database.query(`DROP TABLE IF EXISTS manager;`)
             FETCH curs INTO num,bal,acType;
 
             IF acType = 'child' THEN
-                set bal = bal * 0.12;
+                set bal = bal + bal * 0.12;
             ELSEIF acType = 'teen' AND bal >= 500 THEN
-                set bal = bal * 0.11;
+                set bal = bal + bal * 0.11;
             ELSEIF acType = 'adult' AND bal >= 1000 THEN
-                set bal = bal * 0.1;
+                set bal = bal + bal * 0.1;
             ELSEIF acType = 'senior' AND bal >= 1000 THEN
-                set bal = bal * 0.13;
+                set bal = bal + bal * 0.13;
             ELSEIF acType = 'joint' AND bal >= 5000 THEN
-                set bal = bal * 0.07;
+                set bal = bal + bal * 0.07;
             END IF;
-
+            
             UPDATE account SET balance = bal WHERE number = num;
                 
         UNTIL bdone END REPEAT;
         CLOSE curs;
         
     END; `);
+
+    database.query(`
+    CREATE PROCEDURE calFDInterests()
+    BEGIN
+        DECLARE num INT DEFAULT 0;
+        DECLARE fdAmount NUMERIC(12,2) DEFAULT 0.00;
+        DECLARE fdType VARCHAR(10) DEFAULT "";
+        DECLARE acBalance NUMERIC(12,2) DEFAULT 0.00;
+
+        DECLARE bdone INT;
+
+        DECLARE curs CURSOR FOR SELECT distinct number,amount,plan FROM fixed_deposit;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
+
+        OPEN curs;
+
+        SET bdone=0;
+        REPEAT
+            FETCH curs INTO num,fdAmount,fdType;
+            SELECT balance INTO acBalance FROM account WHERE number = num;
+
+            IF fdType = '1y' THEN
+                SET acBalance = acBalance + fdAmount * 0.14 / 12;
+            ELSEIF fdType = '3y' THEN
+                SET acBalance = acBalance + fdAmount * 0.15 / 12;
+            ELSEIF fdType = '6m' THEN
+                SET acBalance = acBalance + fdAmount * 0.13 / 12;
+            END IF;
+            
+            UPDATE account SET balance = acBalance WHERE number = num;
+            
+
+        UNTIL bdone END REPEAT;
+        CLOSE curs;
+    
+    
+    END`);
 
     database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
     database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
@@ -268,8 +306,6 @@ database.query(`DROP TABLE IF EXISTS manager;`)
     database.query("CALL calculateInterests();");
 
 }
-
-
 
 module.exports = {
     createConnection,
