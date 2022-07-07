@@ -85,6 +85,17 @@ app.post(`/criticalVerify`, function(req, res){
 app.post(`/criticalTransaction`, function(req, res){
    console.log("critical Transaction");
    console.log(req.body);
+   
+   let ac_number = req.body.accNo;
+   let amount = req.body.amount;
+   let trasaction_type = req.body.type;
+   let date = req.body.type;
+
+   //let response_data = req.body().String();
+   //response_data[]
+
+   //database.query();
+
    res.send(req.body);
 });
 
