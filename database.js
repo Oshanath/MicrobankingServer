@@ -1,4 +1,6 @@
 const mysql = require('mysql');
+var crypto = require('crypto');
+
 let database = null;
 
 function createConnection() {
@@ -11,6 +13,24 @@ function createConnection() {
     return database;
 }
 
+function hash(string){
+    return crypto.createHash('sha256').update(string).digest('base256');
+}
+
+function compareHash(hash1, hash2){
+
+    let equals = true;
+
+    for(let i = 0; i < hash1.length; i++){
+        if(hash1[i] !== hash2[i]){
+            equals = false;
+            break;
+        }
+    }
+
+    return equals;
+
+}
 
 async function calculateInterests() {
 
@@ -58,13 +78,15 @@ async function calculateInterests() {
 }
 
 function dropTablesAndInsertDummyData() {
-    database.query(`DROP TABLE IF EXISTS account_customer;`);
-    database.query(`DROP TABLE IF EXISTS account_registered;`);
-    database.query(`DROP TABLE IF EXISTS account_critical;`);
-    database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
-    database.query(`DROP TABLE IF EXISTS account;`);
-    database.query(`DROP TABLE IF EXISTS customer;`);
-    database.query(`DROP TABLE IF EXISTS agent;`);
+database.query(`DROP TABLE IF EXISTS account_customer;`);
+database.query(`DROP TABLE IF EXISTS account_registered;`);
+database.query(`DROP TABLE IF EXISTS account_critical;`);
+database.query(`DROP TABLE IF EXISTS account_pin`);
+database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
+database.query(`DROP TABLE IF EXISTS account;`);
+database.query(`DROP TABLE IF EXISTS customer;`);
+database.query(`DROP TABLE IF EXISTS agent;`);
+database.query(`DROP TABLE IF EXISTS area`);
 
     database.query(`DROP TABLE IF EXISTS manager;`)
 
@@ -79,13 +101,21 @@ function dropTablesAndInsertDummyData() {
         CHECK(type in ("child", "teen", "adult", "senior", "joint"))
     );`);
 
+    database.query(`CREATE TABLE area(
+        code INT NOT NULL,
+        name VARCHAR(20) NOT NULL,
+        PRIMARY KEY(code)
+    )`);
+        
     database.query(`CREATE TABLE agent(
         agentID VARCHAR(20), 
         name VARCHAR(50) NOT NULL, 
         password VARCHAR(50) NOT NULL, 
-        PRIMARY KEY (agentID)
+        code INT,
+        PRIMARY KEY (agentID),
+        FOREIGN KEY(code) REFERENCES area(code)
     );`);
-
+        
     database.query(`CREATE TABLE customer(
         nic VARCHAR(20), 
         name VARCHAR(50) NOT NULL, 
@@ -93,26 +123,26 @@ function dropTablesAndInsertDummyData() {
         PRIMARY KEY (nic), 
         FOREIGN KEY (agentID) references agent(agentID)
     );`);
-
+        
     database.query(`CREATE TABLE account_customer(
         number INT, 
         nic VARCHAR(20), 
         FOREIGN KEY (number) REFERENCES account(number), 
         FOREIGN KEY (nic) REFERENCES customer(nic)
     );`);
-
+        
     database.query(`CREATE TABLE account_critical(
         number INT, 
         critical BOOLEAN,
         FOREIGN KEY (number) REFERENCES account(number)
     );`);
-
+        
     database.query(`CREATE TABLE account_registered(
         number INT, 
         registered BOOLEAN NOT NULL, 
         FOREIGN KEY (number) REFERENCES account(number)
     );`);
-
+        
     database.query(`CREATE TABLE fixed_deposit(
         fd_number INT NOT NULL, 
         number INT NOT NULL,
@@ -122,14 +152,21 @@ function dropTablesAndInsertDummyData() {
         FOREIGN KEY (number) REFERENCES account(number),
         CHECK(plan in ("1y", "3y", "6m"))
     );`);
-
+        
     database.query(`CREATE TABLE manager(
         username VARCHAR(20) NOT NULL,
-        password VARCHAR(50) NOT NULL,
+        password BLOB NOT NULL,
         PRIMARY KEY (username)
     )`);
 
-    // Functions and procedures
+    database.query(`CREATE TABLE account_pin(
+        number INT NOT NULL, 
+        pin BLOB NOT NULL,
+        PRIMARY KEY (number), 
+        FOREIGN KEY(number) REFERENCES account(number)
+    )`);
+        
+        // Functions and procedures
     database.query(`
             
     CREATE PROCEDURE calculateInterests()
@@ -227,8 +264,11 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_registered VALUES(65584445, false);`);
     database.query(`INSERT INTO account_registered VALUES(78654555, false);`);
 
-    database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", \"password\");");
-    database.query("INSERT INTO agent VALUES(\"190564L\", \"Rajawasam\", \"password\");");
+    database.query(`INSERT INTO area VALUES(1, "Nugegoda")`);
+    database.query(`INSERT INTO area VALUES(2, "Moratuwa")`);
+    
+    database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", \"password\", 1);");
+    database.query("INSERT INTO agent VALUES(\"190564L\", \"Rajawasam\", \"password\", 2);");
 
     database.query("INSERT INTO customer VALUES(\"991741135v\", \"Lasith\", \"190488J\");");
     database.query("INSERT INTO customer VALUES(\"246757377f\", \"Ravindu\", \"190488J\");");
@@ -254,19 +294,22 @@ function dropTablesAndInsertDummyData() {
     database.query("INSERT INTO account_critical VALUES(23580987, true);");
     database.query("INSERT INTO account_critical VALUES(10885446, false);");
 
-    database.query("INSERT INTO fixed_deposit VALUES(153728135, 65468467, 50000.00, '1y');");
-    database.query("INSERT INTO fixed_deposit VALUES(123543148, 85469699, 25000.00, '3y');");
-    database.query("INSERT INTO fixed_deposit VALUES(345135103, 45673858, 25000.00, '3y');");
-    database.query("INSERT INTO fixed_deposit VALUES(145134502, 65584445, 60000.00, '1y');");
-    database.query("INSERT INTO fixed_deposit VALUES(123514613, 10885446, 30000.00, '6m');");
-    database.query("INSERT INTO fixed_deposit VALUES(234325123, 78654555, 15000.00, '3y');");
+    database.query(`INSERT INTO account_pin VALUES(10885446, ?)`, [hash("1234")]);
+    database.query(`INSERT INTO account_pin VALUES(12332555, ?)`, [hash("5678")]);
+    database.query(`INSERT INTO account_pin VALUES(65468467, ?)`, [hash("9101")]);
+    database.query(`INSERT INTO account_pin VALUES(85469699, ?)`, [hash("6447")]);
+    database.query(`INSERT INTO account_pin VALUES(16683568, ?)`, [hash("4545")]);
+    database.query(`INSERT INTO account_pin VALUES(23580987, ?)`, [hash("9000")]);
 
-    //database.query("CALL calculateInterests();");
-    database.query("CALL calFDInterests();");
+    database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
+
+    database.query("CALL calculateInterests();");
 
 }
 
 module.exports = {
     createConnection,
-    dropTablesAndInsertDummyData
+    dropTablesAndInsertDummyData,
+    hash,
+    compareHash
 };

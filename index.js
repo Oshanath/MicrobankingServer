@@ -1,46 +1,41 @@
 var express = require('express');
 const db = require("./database");
 var bodyParser = require('body-parser');
-var crypto = require('crypto');
 
 var app = express();
 var jsonParser = bodyParser.json()
 // var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
-function hash(string){
-   var hash = crypto.createHash('sha256').update(string).digest('base256');
-   let s = "";
-
-   for(let i = 0; i < hash.length; i++){
-      s += String.fromCharCode(hash[i]);
-   }
-
-   return s;
-}
+var hash = db.hash;
 
 app.use(bodyParser.urlencoded({
    extended: true
  }));
 
 app.get('/', function (req, res) {
-   res.render('signin.ejs');
+   res.render('signin.ejs', {"r": "none"});
 });
 
 app.post('/signin', function (req, res) {
    let username = req.body.username;
    let password = req.body.password;
 
+   let r = {};
+
    database.query(`SELECT * FROM manager WHERE username = "${username}"`, (err, result) => {
       console.log(result);
-      let r = "";
-
-      if(result.password === password){
-         r = "success";
-      }
+      
+      if(result.length == 0) r.result = "user not found";
       else{
-         r = "failure";
+         if(!db.compareHash(hash(password), result[0].password)){
+            r.result = "password mismatch";
+         }
+         else{
+            r.result = "success";
+         }
       }
-      res.render(`home.ejs`, {r});
+
+      if(r.result === "success") res.render(`home.ejs`, {"r": r.result});
+      else res.render(`signin.ejs`, {"r": r.result});
    });
 
 });
@@ -60,10 +55,40 @@ app.get('/syncAgent/:agentID', function (req, res) {
 });
 
 app.post(`/criticalVerify`, function(req, res){
-   console.log("critical verify");
+   console.log(req.body);
+
+   let found = false;
+
+   database.query(`SELECT * FROM account INNER JOIN account_customer USING(number)
+   INNER JOIN account_pin USING (number) WHERE number = ${req.body.acc_no}`, (err, result) => {
+      
+      for(let i = 0; i < result.length; i++){
+         if(result[i].nic === req.body.nic){
+
+            found = true;
+
+            if(db.compareHash(hash(req.body.pin), result[i].pin)){
+               res.send(JSON.stringify({"message": "success"}));
+               break;
+            }
+            else{
+               res.send(JSON.stringify({"message": "wrong pin"}));
+            }
+         }
+      }
+
+      if(!found){
+         res.send(JSON.stringify({"message": "unregistered"}));
+      }
+   });
+});
+
+app.post(`/criticalTransaction`, function(req, res){
+   console.log("critical Transaction");
    console.log(req.body);
    res.send(req.body);
 });
+
 
 // Express server
 var server = app.listen(8083, function () {
