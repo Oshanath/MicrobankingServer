@@ -64,11 +64,10 @@ app.post(`/criticalVerify`, function(req, res){
       
       for(let i = 0; i < result.length; i++){
          if(result[i].nic === req.body.nic){
-
             found = true;
 
             if(db.compareHash(hash(req.body.pin), result[i].pin)){
-               res.send(JSON.stringify({"message": "success"}));
+               res.send(JSON.stringify({"message": "success", "balance": result[i].balance, "type": result[i].balance}));
                break;
             }
             else{
