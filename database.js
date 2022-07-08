@@ -79,20 +79,23 @@ async function calculateInterests() {
 }
 
 function dropTablesAndInsertDummyData() {
-database.query(`DROP TABLE IF EXISTS account_customer;`);
-database.query(`DROP TABLE IF EXISTS account_registered;`);
-database.query(`DROP TABLE IF EXISTS account_critical;`);
-database.query(`DROP TABLE IF EXISTS account_pin`);
-database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
-database.query(`DROP TABLE IF EXISTS account;`);
-database.query(`DROP TABLE IF EXISTS customer;`);
-database.query(`DROP TABLE IF EXISTS agent;`);
-database.query(`DROP TABLE IF EXISTS area`);
+    database.query(`DROP TABLE IF EXISTS account_customer;`);
+    database.query(`DROP TABLE IF EXISTS account_registered;`);
+    database.query(`DROP TABLE IF EXISTS account_critical;`);
+    database.query(`DROP TABLE IF EXISTS account_pin`);
+    database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
+    database.query(`DROP TABLE IF EXISTS account;`);
+    database.query(`DROP TABLE IF EXISTS customer;`);
+    database.query(`DROP TABLE IF EXISTS agent;`);
+    database.query(`DROP TABLE IF EXISTS area`);
 
     database.query(`DROP TABLE IF EXISTS manager;`)
 
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
     database.query("DROP PROCEDURE IF EXISTS calFDInterests");
+
+    database.query("DROP EVENT IF EXISTS add_savings_interests");
+    database.query("DROP EVENT IF EXISTS add_fd_interests");
 
     database.query(`CREATE TABLE account(
         number INT, 
@@ -172,6 +175,7 @@ database.query(`DROP TABLE IF EXISTS area`);
             
     CREATE PROCEDURE calculateInterests()
     BEGIN
+        
         DECLARE num INT DEFAULT 0;
         DECLARE bal NUMERIC(12,2) DEFAULT 0.00;
         DECLARE acType VARCHAR(10) DEFAULT "";
@@ -198,8 +202,9 @@ database.query(`DROP TABLE IF EXISTS area`);
             ELSEIF acType = 'joint' AND bal >= 5000 THEN
                 set bal = bal + bal * 0.07;
             END IF;
-            
+            START TRANSACTION;
             UPDATE account SET balance = bal WHERE number = num;
+            COMMIT;
                 
         UNTIL bdone END REPEAT;
         CLOSE curs;
@@ -234,8 +239,9 @@ database.query(`DROP TABLE IF EXISTS area`);
                 SET acBalance = acBalance + fdAmount * 0.13 / 12;
             END IF;
             
+            START TRANSACTION;
             UPDATE account SET balance = acBalance WHERE number = num;
-            
+            COMMIT;
 
         UNTIL bdone END REPEAT;
         CLOSE curs;
@@ -304,7 +310,22 @@ database.query(`DROP TABLE IF EXISTS area`);
 
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
 
-    database.query("CALL calculateInterests();");
+    database.query(`
+    CREATE EVENT add_savings_interests
+    ON SCHEDULE EVERY 1 MONTH
+    STARTS '2022-07-01 00:00:00'
+    DO
+        CALL calculateInterests();
+    `);
+   
+    database.query(`
+    CREATE EVENT add_fd_interests
+    ON SCHEDULE EVERY 1 MONTH
+    STARTS '2022-07-01 00:00:00'
+    DO
+        CALL calFDInterests();
+    `);
+   
 }
 
 module.exports = {

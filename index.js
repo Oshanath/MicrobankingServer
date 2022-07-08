@@ -89,33 +89,26 @@ app.post(`/criticalTransaction`, function (req, res) {
    let ac_number = req.body.acc_no;
    let amount = parseFloat(req.body.amount);
    let trasaction_type = req.body.type;
-   let date = req.body.date;
    let ac_balance;
 
-   // console.log(trasaction_type);
-
-   database.query(`START TRANSACTION;`);
+   
    database.query(`SELECT balance FROM account WHERE number = ${ac_number}`, (err, resultAllAccounts) => {
       ac_balance = resultAllAccounts[0][`balance`];
       
-      console.log(ac_balance);
-      console.log(trasaction_type);
       if (trasaction_type === `Withdraw` && ac_balance >= amount) {
          ac_balance -= amount;
-         console.log(`DONE`)
       }else if (trasaction_type === `Deposit`) {
          ac_balance += amount;
-         console.log(`DEPOSIT DONE`);
       }
-     
+      database.query(`START TRANSACTION;`);
       database.query(`UPDATE account SET balance = ${ac_balance} where number = ${ac_number};`);
-      console.log(ac_balance)
+      database.query(`COMMIT;`,(err, commitResult) =>{
+         if(err == null){
+            res.send(JSON.stringify({ "message": "success" }));
+         }
+      });
    });
-   database.query(`COMMIT;`,(err, commitResult) =>{
-      if(err == null){
-         res.send(JSON.stringify({ "message": "success" }));
-      }
-   });
+   
 });
 
 
