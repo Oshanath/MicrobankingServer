@@ -9,10 +9,10 @@ var hash = db.hash;
 
 app.use(bodyParser.urlencoded({
    extended: true
- }));
+}));
 
 app.get('/', function (req, res) {
-   res.render('signin.ejs', {"r": "none"});
+   res.render('signin.ejs', { "r": "none" });
 });
 
 app.post('/signin', function (req, res) {
@@ -23,19 +23,19 @@ app.post('/signin', function (req, res) {
 
    database.query(`SELECT * FROM manager WHERE username = "${username}"`, (err, result) => {
       console.log(result);
-      
-      if(result.length == 0) r.result = "user not found";
-      else{
-         if(!db.compareHash(hash(password), result[0].password)){
+
+      if (result.length == 0) r.result = "user not found";
+      else {
+         if (!db.compareHash(hash(password), result[0].password)) {
             r.result = "password mismatch";
          }
-         else{
+         else {
             r.result = "success";
          }
       }
 
-      if(r.result === "success") res.render(`home.ejs`, {"r": r.result});
-      else res.render(`signin.ejs`, {"r": r.result});
+      if (r.result === "success") res.render(`home.ejs`, { "r": r.result });
+      else res.render(`signin.ejs`, { "r": r.result });
    });
 
 });
@@ -48,55 +48,74 @@ app.get('/syncAgent/:agentID', function (req, res) {
       account INNER JOIN account_registered USING(number)
       INNER JOIN account_customer USING(number) 
       INNER JOIN customer USING(nic) 
-      where registered = true;`, 
-   (err, result) => {
-      res.send(JSON.stringify(result));
-   });
+      where registered = true;`,
+      (err, result) => {
+         res.send(JSON.stringify(result));
+      });
 });
 
-app.post(`/criticalVerify`, function(req, res){
+app.post(`/criticalVerify`, function (req, res) {
    console.log(req.body);
 
    let found = false;
 
    database.query(`SELECT * FROM account INNER JOIN account_customer USING(number)
    INNER JOIN account_pin USING (number) WHERE number = ${req.body.acc_no}`, (err, result) => {
-      
-      for(let i = 0; i < result.length; i++){
-         if(result[i].nic === req.body.nic){
+
+      for (let i = 0; i < result.length; i++) {
+         if (result[i].nic === req.body.nic) {
             found = true;
 
-            if(db.compareHash(hash(req.body.pin), result[i].pin)){
-               res.send(JSON.stringify({"message": "success", "balance": result[i].balance, "type": result[i].balance}));
+            if (db.compareHash(hash(req.body.pin), result[i].pin)) {
+               res.send(JSON.stringify({ "message": "success", "balance": result[i].balance, "type": result[i].balance }));
                break;
             }
-            else{
-               res.send(JSON.stringify({"message": "wrong pin"}));
+            else {
+               res.send(JSON.stringify({ "message": "wrong pin" }));
             }
          }
       }
 
-      if(!found){
-         res.send(JSON.stringify({"message": "unregistered"}));
+      if (!found) {
+         res.send(JSON.stringify({ "message": "unregistered" }));
       }
    });
 });
 
-app.post(`/criticalTransaction`, function(req, res){
+app.post(`/criticalTransaction`, function (req, res) {
    console.log("critical Transaction");
    console.log(req.body);
-   
-   let ac_number = req.body.accNo;
-   let amount = req.body.amount;
+
+   let ac_number = req.body.acc_no;
+   let amount = parseFloat(req.body.amount);
    let trasaction_type = req.body.type;
-   let date = req.body.type;
+   let date = req.body.date;
+   let ac_balance;
 
-   //let response_data = req.body().String();
-   //response_data[]
+   // console.log(trasaction_type);
 
-   //database.query();
-
-   res.send(req.body);
+   database.query(`START TRANSACTION;`);
+   database.query(`SELECT balance FROM account WHERE number = ${ac_number}`, (err, resultAllAccounts) => {
+      ac_balance = resultAllAccounts[0][`balance`];
+      
+      console.log(ac_balance);
+      console.log(trasaction_type);
+      if (trasaction_type === `Withdraw` && ac_balance >= amount) {
+         ac_balance -= amount;
+         console.log(`DONE`)
+      }else if (trasaction_type === `Deposit`) {
+         ac_balance += amount;
+         console.log(`DEPOSIT DONE`);
+      }
+     
+      database.query(`UPDATE account SET balance = ${ac_balance} where number = ${ac_number};`);
+      console.log(ac_balance)
+   });
+   database.query(`COMMIT;`,(err, commitResult) =>{
+      if(err == null){
+         res.send(JSON.stringify({ "message": "success" }));
+      }
+   });
 });
 
 
@@ -104,7 +123,7 @@ app.post(`/criticalTransaction`, function(req, res){
 var server = app.listen(8083, function () {
    var host = server.address().address
    var port = server.address().port
-   
+
    console.log("Example app listening at http://", host, port);
 });
 
