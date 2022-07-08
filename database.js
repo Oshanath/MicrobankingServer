@@ -51,6 +51,7 @@ async function calculateInterests() {
                         acType = resultAllAccounts[i][`type`];
                         if (!acType.localeCompare(`child`)) {
                             balance += balance * 0.12;
+                            
                             //console.log(balance);
                         } else if (!acType.localeCompare(`teen`) && balance >= 500) {
                             balance += balance * 0.11;
@@ -304,7 +305,6 @@ database.query(`DROP TABLE IF EXISTS area`);
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
 
     database.query("CALL calculateInterests();");
-
 }
 
 module.exports = {
