@@ -113,6 +113,11 @@ app.post(`/criticalTransaction`, function (req, res) {
    
 });
 
+app.post(`/normalTransaction`, function (req, res) {
+   console.log("Normal Transaction");
+   console.log(req.body);
+   
+});
 
 // Express server
 var server = app.listen(8083, function () {
