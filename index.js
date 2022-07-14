@@ -33,7 +33,7 @@ app.post('/signin', function (req, res) {
          }
       }
 
-      if(r.result === "success") res.render(`home.ejs`, {"type": "none"});
+      if(r.result === "success") res.render(`home.ejs`, {"type": "none", "agentID": "", "accountNumber": ""});
       else res.render(`signin.ejs`, {"r": r.result});
    });
 
@@ -132,17 +132,59 @@ app.post(`/normalTransaction`, function (req, res) {
 
 app.post("/agentSummary", (req, res) => {
    console.log(req.body);
-   res.render("home.ejs", {type: "agentSummary"});
+
+   database.query(`SELECT DISTINCT * FROM transactions WHERE agentID = ?`, [req.body.agentID], (err, result) => {
+
+      console.log(result);
+      let data = {};
+
+      for(let i = 0; i < result.length; i++){
+         let month = `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}`;
+         if(!data[month]){
+            data[month] = {
+               "trans": 1,
+               "with": result[i].trans_type === "w" ? 1 : 0,
+               "dep": result[i].trans_type === "d" ? 1 : 0
+            };
+         }
+         else{
+            data[month].trans += 1;  
+            if(result[i].trans_type === "w") data[month].with += 1;
+            else data[month].dep += 1;
+         }
+      }
+      console.log(data);
+
+      res.render("home.ejs", {type: "agentSummary", "agentID": req.body.agentID, "accountNumber": "", data});
+   });
+
 });
 
 app.post("/agentTransactions", (req, res) => {
    console.log(req.body);
-   res.render("home.ejs", {type: "agentTransactions"});
+   let data =[];
+
+   database.query(`SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime)`, [req.body.agentID], (err, result) => {
+
+      for(let i = 0; i < result.length; i++){
+         data.push({
+            month : `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}`,
+            number: result[i].number,
+            type: result[i].trans_type === "w" ? "Withdrawal" : "Deposit",
+            amount: result[i].amount,
+            date: `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}-${result[i].datetime.getDate()}`
+         });
+      }
+      console.log(data);
+
+      res.render("home.ejs", {type: "agentTransactions", "agentID": req.body.agentID, "accountNumber": "", data});
+   });
+
 });
 
 app.post("/accountSummary", (req, res) => {
    console.log(req.body);
-   res.render("home.ejs", {type: "accountSummary"});
+   res.render("home.ejs", {type: "accountSummary", "agentID": req.body.agentID, "accountNumber": ""});
 });
 
 app.post("/accountTransactions", (req, res) => {

@@ -84,6 +84,7 @@ function dropTablesAndInsertDummyData() {
     database.query(`DROP TABLE IF EXISTS account_critical;`);
     database.query(`DROP TABLE IF EXISTS account_pin`);
     database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
+    database.query(`DROP TABLE IF EXISTS transactions;`);
     database.query(`DROP TABLE IF EXISTS account;`);
     database.query(`DROP TABLE IF EXISTS customer;`);
     database.query(`DROP TABLE IF EXISTS agent;`);
@@ -168,6 +169,16 @@ function dropTablesAndInsertDummyData() {
         pin BLOB NOT NULL,
         PRIMARY KEY (number), 
         FOREIGN KEY(number) REFERENCES account(number)
+    )`);
+
+    database.query(`CREATE TABLE transactions(
+        number INT NOT NULL,
+        trans_type VARCHAR(1) NOT NULL,
+        amount NUMERIC(12,2) NOT NULL,
+        datetime DATETIME NOT NULL,
+        agentID VARCHAR(20),
+        FOREIGN KEY (agentID) REFERENCES agent(agentID),
+        FOREIGN KEY (number) REFERENCES account(number)
     )`);
         
         // Functions and procedures
@@ -311,6 +322,13 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_pin VALUES(45673858, ?)`, [hash("1212")]);
 
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
+
+    database.query(`INSERT INTO transactions VALUES(12332555, "w", 12000.00, "2022-05-13 11:23:45", "190488J")`);
+    database.query(`INSERT INTO transactions VALUES(65468467, "d", 14000.00, "2022-05-15 11:23:45", "190488J")`);
+    database.query(`INSERT INTO transactions VALUES(12332555, "w", 17000.00, "2021-03-13 11:23:45", "190488J")`);
+    database.query(`INSERT INTO transactions VALUES(65468467, "w", 122000.00, "2021-03-15 11:23:45", "190488J")`);
+
+    database.query("CALL calculateInterests();");
 
     database.query(`
     CREATE EVENT add_savings_interests
