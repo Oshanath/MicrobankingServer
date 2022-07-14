@@ -51,6 +51,7 @@ async function calculateInterests() {
                         acType = resultAllAccounts[i][`type`];
                         if (!acType.localeCompare(`child`)) {
                             balance += balance * 0.12;
+                            
                             //console.log(balance);
                         } else if (!acType.localeCompare(`teen`) && balance >= 500) {
                             balance += balance * 0.11;
@@ -87,11 +88,15 @@ function dropTablesAndInsertDummyData() {
     database.query(`DROP TABLE IF EXISTS account;`);
     database.query(`DROP TABLE IF EXISTS customer;`);
     database.query(`DROP TABLE IF EXISTS agent;`);
-    database.query(`DROP TABLE IF EXISTS area;`);
+    database.query(`DROP TABLE IF EXISTS area`);
 
-    database.query(`DROP TABLE IF EXISTS manager;`);
+    database.query(`DROP TABLE IF EXISTS manager;`)
 
-    database.query("DROP PROCEDURE IF EXISTS calculateInterests;");
+    database.query("DROP PROCEDURE IF EXISTS calculateInterests");
+    database.query("DROP PROCEDURE IF EXISTS calFDInterests");
+
+    database.query("DROP EVENT IF EXISTS add_savings_interests");
+    database.query("DROP EVENT IF EXISTS add_fd_interests");
 
     database.query(`CREATE TABLE account(
         number INT, 
@@ -181,6 +186,7 @@ function dropTablesAndInsertDummyData() {
             
     CREATE PROCEDURE calculateInterests()
     BEGIN
+        
         DECLARE num INT DEFAULT 0;
         DECLARE bal NUMERIC(12,2) DEFAULT 0.00;
         DECLARE acType VARCHAR(10) DEFAULT "";
@@ -197,23 +203,62 @@ function dropTablesAndInsertDummyData() {
             FETCH curs INTO num,bal,acType;
 
             IF acType = 'child' THEN
-                set bal = bal * 0.12;
+                set bal = bal + bal * 0.12;
             ELSEIF acType = 'teen' AND bal >= 500 THEN
-                set bal = bal * 0.11;
+                set bal = bal + bal * 0.11;
             ELSEIF acType = 'adult' AND bal >= 1000 THEN
-                set bal = bal * 0.1;
+                set bal = bal + bal * 0.1;
             ELSEIF acType = 'senior' AND bal >= 1000 THEN
-                set bal = bal * 0.13;
+                set bal = bal + bal * 0.13;
             ELSEIF acType = 'joint' AND bal >= 5000 THEN
-                set bal = bal * 0.07;
+                set bal = bal + bal * 0.07;
             END IF;
-
+            START TRANSACTION;
             UPDATE account SET balance = bal WHERE number = num;
+            COMMIT;
                 
         UNTIL bdone END REPEAT;
         CLOSE curs;
         
     END; `);
+
+    database.query(`
+    CREATE PROCEDURE calFDInterests()
+    BEGIN
+        DECLARE num INT DEFAULT 0;
+        DECLARE fdAmount NUMERIC(12,2) DEFAULT 0.00;
+        DECLARE fdType VARCHAR(10) DEFAULT "";
+        DECLARE acBalance NUMERIC(12,2) DEFAULT 0.00;
+
+        DECLARE bdone INT;
+
+        DECLARE curs CURSOR FOR SELECT distinct number,amount,plan FROM fixed_deposit;
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET bdone = 1;
+
+        OPEN curs;
+
+        SET bdone=0;
+        REPEAT
+            FETCH curs INTO num,fdAmount,fdType;
+            SELECT balance INTO acBalance FROM account WHERE number = num;
+
+            IF fdType = '1y' THEN
+                SET acBalance = acBalance + fdAmount * 0.14 / 12;
+            ELSEIF fdType = '3y' THEN
+                SET acBalance = acBalance + fdAmount * 0.15 / 12;
+            ELSEIF fdType = '6m' THEN
+                SET acBalance = acBalance + fdAmount * 0.13 / 12;
+            END IF;
+            
+            START TRANSACTION;
+            UPDATE account SET balance = acBalance WHERE number = num;
+            COMMIT;
+
+        UNTIL bdone END REPEAT;
+        CLOSE curs;
+    
+    
+    END`);
 
     database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
     database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
@@ -274,6 +319,7 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_pin VALUES(85469699, ?)`, [hash("6447")]);
     database.query(`INSERT INTO account_pin VALUES(16683568, ?)`, [hash("4545")]);
     database.query(`INSERT INTO account_pin VALUES(23580987, ?)`, [hash("9000")]);
+    database.query(`INSERT INTO account_pin VALUES(45673858, ?)`, [hash("1212")]);
 
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
 
@@ -284,9 +330,23 @@ function dropTablesAndInsertDummyData() {
 
     database.query("CALL calculateInterests();");
 
+    database.query(`
+    CREATE EVENT add_savings_interests
+    ON SCHEDULE EVERY 1 MONTH
+    STARTS '2022-07-01 00:00:00'
+    DO
+        CALL calculateInterests();
+    `);
+   
+    database.query(`
+    CREATE EVENT add_fd_interests
+    ON SCHEDULE EVERY 1 MONTH
+    STARTS '2022-07-01 00:00:00'
+    DO
+        CALL calFDInterests();
+    `);
+   
 }
-
-
 
 module.exports = {
     createConnection,
