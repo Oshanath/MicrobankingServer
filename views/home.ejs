@@ -28,6 +28,8 @@
 
     <form action="/accountTransactions" method = "POST">
         <input type = "text" name = "accountNo" placeholder="Account Number">
+        <input type = "text" name = "year" placeholder="year">
+        <input type = "text" name = "month" placeholder="month">
         <input type="submit" value="Account Transactions" />
     </form>
 
@@ -74,11 +76,45 @@
     <% } %>
 
     <% if(type === "accountSummary"){ %>
-        <p>Account Summary</p>
+        <p>Account Summary - <%=accountNumber%></p>
+        <table>
+            <tr>
+                <th>Month</th>
+                <th>Transactions</th>
+                <th>Withdrawals</th>
+                <th>Deposits</th>
+            </tr>
+            <% for(let [key, value] of Object.entries(data)){ %>
+                <tr>
+                    <td><%=key%></td>
+                    <td><%=value.trans%></td>
+                    <td><%=value.with%></td>
+                    <td><%=value.dep%></td>
+                </tr>
+            <% } %>
+        </table>
     <% } %>
 
     <% if(type === "accountTransactions"){ %>
-        <p>Account Transactions</p>
+        <p>Account Transactions - <%accountNumber%></p>
+        <table>
+            <tr>
+                <th>Month</th>
+                <th>Agent ID</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+            <% for(let value of data){ %>
+                <tr>
+                    <td><%=value.month%></td>
+                    <td><%=value.agentID%></td>
+                    <td><%=value.type%></td>
+                    <td><%=value.amount%></td>
+                    <td><%=value.date%></td>
+                </tr>
+            <% } %>
+        </table>
     <% } %>
 
 </body>
