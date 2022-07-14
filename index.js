@@ -22,11 +22,10 @@ app.post('/signin', function (req, res) {
    let r = {};
 
    database.query(`SELECT * FROM manager WHERE username = "${username}"`, (err, result) => {
-      console.log(result);
-
-      if (result.length == 0) r.result = "user not found";
-      else {
-         if (!db.compareHash(hash(password), result[0].password)) {
+      
+      if(result.length == 0) r.result = "user not found";
+      else{
+         if(!db.compareHash(hash(password), result[0].password)){
             r.result = "password mismatch";
          }
          else {
@@ -34,8 +33,8 @@ app.post('/signin', function (req, res) {
          }
       }
 
-      if (r.result === "success") res.render(`home.ejs`, { "r": r.result });
-      else res.render(`signin.ejs`, { "r": r.result });
+      if(r.result === "success") res.render(`home.ejs`, {"type": "none"});
+      else res.render(`signin.ejs`, {"r": r.result});
    });
 
 });
@@ -44,14 +43,26 @@ app.get('/syncAgent/:agentID', function (req, res) {
    let agentID = req.params.agentID;
    console.log("sync agent");
 
-   database.query(`SELECT * FROM
+   database.query(`SELECT DISTINCT * FROM
       account INNER JOIN account_registered USING(number)
       INNER JOIN account_customer USING(number) 
       INNER JOIN customer USING(nic) 
-      where registered = true;`,
-      (err, result) => {
-         res.send(JSON.stringify(result));
-      });
+      INNER JOIN account_pin USING(number)
+      where registered = true;`, 
+   (err, result) => {
+
+      for(let j = 0; j < result.length; j++){
+         let  pinBuffer = result[j].pin;
+         let pinArray = [];
+
+         for(let i = 0; i < pinBuffer.length; i++){
+            pinArray.push(pinBuffer[i]);
+         }
+         result[j].pin = pinArray;
+      }
+
+      res.send(JSON.stringify(result));
+   });
 });
 
 app.post(`/criticalVerify`, function (req, res) {
@@ -117,6 +128,26 @@ app.post(`/normalTransaction`, function (req, res) {
    console.log("Normal Transaction");
    console.log(req.body);
    
+});
+
+app.post("/agentSummary", (req, res) => {
+   console.log(req.body);
+   res.render("home.ejs", {type: "agentSummary"});
+});
+
+app.post("/agentTransactions", (req, res) => {
+   console.log(req.body);
+   res.render("home.ejs", {type: "agentTransactions"});
+});
+
+app.post("/accountSummary", (req, res) => {
+   console.log(req.body);
+   res.render("home.ejs", {type: "accountSummary"});
+});
+
+app.post("/accountTransactions", (req, res) => {
+   console.log(req.body);
+   res.render("home.ejs", {type: "accountTransactions"});
 });
 
 // Express server
