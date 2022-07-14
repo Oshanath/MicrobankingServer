@@ -105,6 +105,8 @@ app.post(`/criticalTransaction`, function (req, res) {
       database.query(`COMMIT;`,(err, commitResult) =>{
          if(err == null){
             res.send(JSON.stringify({ "message": "success" }));
+         }else{
+            res.send(JSON.stringify({ "message": "fail" }));
          }
       });
    });
