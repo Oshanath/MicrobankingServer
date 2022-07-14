@@ -291,7 +291,7 @@ function dropTablesAndInsertDummyData() {
     database.query("INSERT INTO account_customer VALUES(09887755, \"34634g575jj\");");
     database.query("INSERT INTO account_customer VALUES(09887755, \"rsgrrd44646\");");
 
-    database.query("INSERT INTO account_critical VALUES(12332555, false);");
+    database.query("INSERT INTO account_critical VALUES(12332555, true);");
     database.query("INSERT INTO account_critical VALUES(34635764, false);");
     database.query("INSERT INTO account_critical VALUES(33455546, false);");
     database.query("INSERT INTO account_critical VALUES(85469699, true);");
@@ -307,6 +307,7 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_pin VALUES(85469699, ?)`, [hash("6447")]);
     database.query(`INSERT INTO account_pin VALUES(16683568, ?)`, [hash("4545")]);
     database.query(`INSERT INTO account_pin VALUES(23580987, ?)`, [hash("9000")]);
+    database.query(`INSERT INTO account_pin VALUES(45673858, ?)`, [hash("1212")]);
 
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
 
