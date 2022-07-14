@@ -245,6 +245,7 @@ database.query(`DROP TABLE IF EXISTS manager;`)
     database.query("INSERT INTO account_customer VALUES(45673858, \"246757377f\");");
     database.query("INSERT INTO account_customer VALUES(09887755, \"34634g575jj\");");
     database.query("INSERT INTO account_customer VALUES(09887755, \"rsgrrd44646\");");
+    database.query("INSERT INTO account_customer VALUES(10885446, \"rsgrrd44646\");");
 
     database.query("INSERT INTO account_critical VALUES(12332555, true);");
     database.query("INSERT INTO account_critical VALUES(34635764, false);");

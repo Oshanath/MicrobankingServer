@@ -7,6 +7,43 @@
     <title>Home</title>
 </head>
 <body>
-    <h1><%=r%></h1>
+    <h1>Report Generation</h1>
+
+    <form action="/agentSummary" method = "POST">
+        <input type = "text" name = "agentID" placeholder="Agent ID">
+        <input type="submit" value="Agent Summary" />
+    </form>
+
+    <form action="/agentTransactions" method = "POST">
+        <input type = "text" name = "agentID" placeholder="Agent ID">
+        <input type="submit" value="Agent Transactions" />
+    </form>
+
+    <form action="/accountSummary" method = "POST">
+        <input type = "text" name = "accountNo" placeholder="Account Number">
+        <input type="submit" value="Account Summary" />
+    </form>
+
+    <form action="/accountTransactions" method = "POST">
+        <input type = "text" name = "accountNo" placeholder="Account Number">
+        <input type="submit" value="Account Transactions" />
+    </form>
+
+    <% if(type === "agentSummary"){ %>
+        <p>Agent Summary</p>
+    <% } %>
+
+    <% if(type === "agentTransactions"){ %>
+        <p>Agent Transactions</p>
+    <% } %>
+
+    <% if(type === "accountSummary"){ %>
+        <p>Account Summary</p>
+    <% } %>
+
+    <% if(type === "accountTransactions"){ %>
+        <p>Account Transactions</p>
+    <% } %>
+
 </body>
 </html>
