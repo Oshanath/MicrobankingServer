@@ -89,7 +89,6 @@ function dropTablesAndInsertDummyData() {
     database.query(`DROP TABLE IF EXISTS customer;`);
     database.query(`DROP TABLE IF EXISTS agent;`);
     database.query(`DROP TABLE IF EXISTS area`);
-
     database.query(`DROP TABLE IF EXISTS manager;`)
 
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
@@ -115,7 +114,7 @@ function dropTablesAndInsertDummyData() {
     database.query(`CREATE TABLE agent(
         agentID VARCHAR(20), 
         name VARCHAR(50) NOT NULL, 
-        password VARCHAR(50) NOT NULL, 
+        password BLOB NOT NULL, 
         code INT,
         PRIMARY KEY (agentID),
         FOREIGN KEY(code) REFERENCES area(code)
@@ -124,9 +123,9 @@ function dropTablesAndInsertDummyData() {
     database.query(`CREATE TABLE customer(
         nic VARCHAR(20), 
         name VARCHAR(50) NOT NULL, 
-        agentID VARCHAR(20) NOT NULL,
-        PRIMARY KEY (nic), 
-        FOREIGN KEY (agentID) references agent(agentID)
+        code INT NOT NULL,
+        PRIMARY KEY (nic),
+        FOREIGN KEY (code) references area(code)
     );`);
         
     database.query(`CREATE TABLE account_customer(
@@ -181,6 +180,9 @@ function dropTablesAndInsertDummyData() {
         FOREIGN KEY (agentID) REFERENCES agent(agentID),
         FOREIGN KEY (number) REFERENCES account(number)
     )`);
+
+    database.query(`CREATE INDEX transaction_agent_index ON transactions(agentID);`);
+    database.query(`CREATE INDEX transaction_account_index ON transactions(number);`);
         
         // Functions and procedures
     database.query(`
@@ -286,13 +288,13 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO area VALUES(1, "Nugegoda")`);
     database.query(`INSERT INTO area VALUES(2, "Moratuwa")`);
     
-    database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", \"password\", 1);");
-    database.query("INSERT INTO agent VALUES(\"190564L\", \"Rajawasam\", \"password\", 2);");
+    database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", ?, 1);", [hash("password")]);
+    database.query("INSERT INTO agent VALUES(\"aa\", \"Rajawasam\", ?, 2);", [hash("aa")]);
 
-    database.query("INSERT INTO customer VALUES(\"991741135v\", \"Lasith\", \"190488J\");");
-    database.query("INSERT INTO customer VALUES(\"246757377f\", \"Ravindu\", \"190488J\");");
-    database.query("INSERT INTO customer VALUES(\"34634g575jj\", \"Thilina\", \"190564L\");");
-    database.query("INSERT INTO customer VALUES(\"rsgrrd44646\", \"Madaya\", \"190564L\");");
+    database.query("INSERT INTO customer VALUES(\"991741135v\", \"Lasith\", 1);");
+    database.query("INSERT INTO customer VALUES(\"246757377f\", \"Ravindu\", 1);");
+    database.query("INSERT INTO customer VALUES(\"34634g575jj\", \"Thilina\", 2);");
+    database.query("INSERT INTO customer VALUES(\"rsgrrd44646\", \"Madaya\", 2);");
 
     database.query("INSERT INTO account_customer VALUES(12332555, \"991741135v\");"); // joint lasith ravindu
     database.query("INSERT INTO account_customer VALUES(12332555, \"246757377f\");"); // joint lasith ravindu

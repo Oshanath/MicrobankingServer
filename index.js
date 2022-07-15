@@ -1,6 +1,7 @@
 var express = require('express');
 const db = require("./database");
 var bodyParser = require('body-parser');
+const { query } = require('express');
 
 var app = express();
 var jsonParser = bodyParser.json()
@@ -13,6 +14,25 @@ app.use(bodyParser.urlencoded({
 
 app.get('/', function (req, res) {
    res.render('signin.ejs', { "r": "none" });
+});
+
+app.post("/agentSignIn", (req, res) => {
+
+   database.query(`SELECT * FROM agent WHERE agentID = ?`, [req.body.agentID], (err, result) => {
+      let r = {};
+
+      if(result.length == 0) r.result = "user not found";
+      else{
+         if(!db.compareHash(hash(req.body.password), result[0].password)){
+            r.result = "password mismatch";
+         }
+         else {
+            r.result = "success";
+         }
+      }
+
+      res.send(r);
+   });
 });
 
 app.post('/signin', function (req, res) {
@@ -154,7 +174,7 @@ function countTransactions(result){
 
 app.post("/agentSummary", (req, res) => {
 
-   database.query(`SELECT DISTINCT * FROM transactions WHERE agentID = ?`, [req.body.agentID], (err, result) => {
+   database.query(`SELECT DISTINCT * FROM transaction_agent_index WHERE agentID = ?`, [req.body.agentID], (err, result) => {
       let data = countTransactions(result);
       res.render("home.ejs", {type: "agentSummary", "agentID": req.body.agentID, "accountNumber": "", data});
    });
@@ -169,14 +189,14 @@ app.post("/agentTransactions", (req, res) => {
    let query = "";
 
    if(req.body.year === "" && req.body.month === "")
-      query = `SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime)`;
+      query = `SELECT DISTINCT * FROM transaction_agent_index WHERE agentID=? ORDER BY (datetime)`;
 
    else if(req.body.month === "")
-      query = `SELECT DISTINCT * FROM transactions WHERE agentID=? AND datetime BETWEEN 
+      query = `SELECT DISTINCT * FROM transaction_agent_index WHERE agentID=? AND datetime BETWEEN 
       '${req.body.year}-1-1 00:00:00' AND '${req.body.year}-12-31 23:59:59' ORDER BY (datetime)`;
 
    else
-      query = `SELECT DISTINCT * FROM transactions WHERE agentID=? AND datetime BETWEEN 
+      query = `SELECT DISTINCT * FROM transaction_agent_index WHERE agentID=? AND datetime BETWEEN 
       '${req.body.year}-${req.body.month}-1 00:00:00' AND
       '${req.body.year}-${req.body.month}-${getDays(req.body.year, req.body.month)} 23:59:59' ORDER BY (datetime)`;
 
@@ -200,7 +220,7 @@ app.post("/agentTransactions", (req, res) => {
 
 app.post("/accountSummary", (req, res) => {
 
-   database.query(`SELECT DISTINCT * FROM transactions WHERE number=?`, [req.body.accountNo], (err, result) => {
+   database.query(`SELECT DISTINCT * FROM transaction_account_index WHERE number=?`, [req.body.accountNo], (err, result) => {
       let data = countTransactions(result);
       res.render("home.ejs", {type: "accountSummary", "agentID": "", "accountNumber": req.body.accountNo, data});
    });
@@ -213,14 +233,14 @@ app.post("/accountTransactions", (req, res) => {
    let query = "";
 
    if(req.body.year === "" && req.body.month === "")
-      query = `SELECT DISTINCT * FROM transactions WHERE number=? ORDER BY (datetime)`;
+      query = `SELECT DISTINCT * FROM transaction_account_index WHERE number=? ORDER BY (datetime)`;
 
    else if(req.body.month === "")
-      query = `SELECT DISTINCT * FROM transactions WHERE number=? AND datetime BETWEEN 
+      query = `SELECT DISTINCT * FROM transaction_account_index WHERE number=? AND datetime BETWEEN 
       '${req.body.year}-1-1 00:00:00' AND '${req.body.year}-12-31 23:59:59' ORDER BY (datetime)`;
 
    else
-      query = `SELECT DISTINCT * FROM transactions WHERE number=? AND datetime BETWEEN 
+      query = `SELECT DISTINCT * FROM transaction_account_index WHERE number=? AND datetime BETWEEN 
       '${req.body.year}-${req.body.month}-1 00:00:00' AND
       '${req.body.year}-${req.body.month}-${getDays(req.body.year, req.body.month)} 23:59:59' ORDER BY (datetime)`;
 
