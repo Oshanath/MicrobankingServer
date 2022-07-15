@@ -126,20 +126,38 @@ app.post(`/criticalTransaction`, function (req, res) {
 
 app.post(`/normalTransaction`, function (req, res) {
    console.log("Normal Transaction");
-   // console.log(req.body);
-   // console.log(req.body.transaction1);
-   
-   
-
+   console.log(req.body);
    for(let [key, value] of Object.entries(req.body)){
       
       let arr = JSON.parse(value);
-      console.log(arr[`amount`]);
-   }
 
-   // console.log(req.body[0][`amount`]);
+      let t_accNo = parseInt(arr[`accNo`]);
+      let t_amount = arr[`amount`];
+      let t_type = arr[`type`];
+      let t_date = arr[`date`]; 
+      let ac_bal;
 
-   
+      database.query(`SELECT balance FROM account WHERE number = ${t_accNo}`, (err, resultBal) => {
+         ac_bal = resultBal[0][`balance`];   
+         
+         if( t_type === `Withdraw` && ac_bal >= t_amount){
+            ac_bal -= t_amount;
+         }else if( t_type === `Deposit`){
+            ac_bal += t_amount;
+         }
+
+         database.query(`START TRANSACTION;`);
+         database.query(`UPDATE account SET balance = ${ac_bal} where number = ${t_accNo};`);
+         database.query(`COMMIT;`,(err, commitResult) =>{
+            if(err == null){
+               res.send(JSON.stringify({ "message": "success" }));
+            }else{
+               res.send(JSON.stringify({ "message": "fail" }));
+            }
+         });
+         
+      });  
+   }   
 });
 
 app.post("/agentSummary", (req, res) => {
