@@ -126,7 +126,10 @@ app.post(`/criticalTransaction`, function (req, res) {
 
 app.post(`/normalTransaction`, function (req, res) {
    console.log("Normal Transaction");
-   console.log(req.body);
+   // console.log(req.body);
+   console.log(req.transcation1.accNO);
+   // console.log(req.body[0][`amount`]);
+
    
 });
 
