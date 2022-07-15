@@ -103,7 +103,8 @@ function dropTablesAndInsertDummyData() {
         balance NUMERIC(12,2) NOT NULL, 
         type VARCHAR(10) NOT NULL, 
         PRIMARY KEY (number),
-        CHECK(type in ("child", "teen", "adult", "senior", "joint"))
+        CHECK(type in ("child", "teen", "adult", "senior", "joint")),
+        CHECK(balance >= 0.00)
     );`);
 
     database.query(`CREATE TABLE area(

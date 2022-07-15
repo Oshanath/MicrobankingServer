@@ -138,40 +138,17 @@ app.post(`/normalTransaction`, function (req, res) {
       let ac_bal;
       let trans_type;
 
-      database.query(`SELECT balance FROM account WHERE number = ${t_accNo}`, (err, resultBal) => {
-         ac_bal = resultBal[0][`balance`];   
-         
-         //console.log(ac_bal);
-         if( t_type === `Withdraw` && ac_bal >= t_amount){
-            ac_bal -= t_amount;
-            trans_type = 'w';
-            console.log("Withdrawing");
-         }else if( t_type === `Deposit`){
-            ac_bal += t_amount;
-            trans_type = 'd';
-            console.log("Depositing");
-         }
-
-         //console.log(ac_bal);
+      if( t_type === `Withdraw`){
+         trans_type = 'w';
          database.query(`START TRANSACTION;`);
-         database.query(`UPDATE account SET balance = ${ac_bal} where number = ${t_accNo};`);
-         //database.query(`INSERT INTO transactions VALUES(${t_accNo}, ${trans_type}, ${ac_bal}, ${t_date});`);
-         database.query(`COMMIT;`,(err, commitResult) =>{
-            
-            database.query(`SELECT balance FROM account WHERE number = ${t_accNo}`, (err, resultBal) => {
-               ac_bal = resultBal[0][`balance`];
-               console.log(ac_bal);
-            });  
-            // if(err == null){
-            //    console.log("DONE");
-            //    res.send(JSON.stringify({ "message": "success" }));
-               
-            // }else{
-            //    res.send(JSON.stringify({ "message": "fail" }));
-            // }
-         });
-         
-      });  
+         database.query(`UPDATE account SET balance = balance-${t_amount} where number = ${t_accNo};`);
+         database.query(`COMMIT;`);
+      }else if(t_type === `Deposit`){
+         trans_type = 'd';
+         database.query(`START TRANSACTION;`);
+         database.query(`UPDATE account SET balance = balance+${t_amount} where number = ${t_accNo};`);
+         database.query(`COMMIT;`);
+      }    
    }   
 });
 
