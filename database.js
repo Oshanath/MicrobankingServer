@@ -103,7 +103,8 @@ function dropTablesAndInsertDummyData() {
         balance NUMERIC(12,2) NOT NULL, 
         type VARCHAR(10) NOT NULL, 
         PRIMARY KEY (number),
-        CHECK(type in ("child", "teen", "adult", "senior", "joint"))
+        CHECK(type in ("child", "teen", "adult", "senior", "joint")),
+        CHECK(balance >= 0.00)
     );`);
 
     database.query(`CREATE TABLE area(
@@ -171,13 +172,15 @@ function dropTablesAndInsertDummyData() {
         FOREIGN KEY(number) REFERENCES account(number)
     )`);
 
+//either `w` or `d` for trans Type
+//'YYYY-MM-DD hh:mm:ss'
+
     database.query(`CREATE TABLE transactions(
         number INT NOT NULL,
-        trans_type VARCHAR(1) NOT NULL,
+        trans_type VARCHAR(1) NOT NULL,  
         amount NUMERIC(12,2) NOT NULL,
         datetime DATETIME NOT NULL,
         agentID VARCHAR(20),
-        critical BOOL NOT NULL,
         FOREIGN KEY (agentID) REFERENCES agent(agentID),
         FOREIGN KEY (number) REFERENCES account(number)
     )`);
@@ -324,27 +327,27 @@ function dropTablesAndInsertDummyData() {
 
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
 
-    database.query(`INSERT INTO transactions VALUES(12332555, "w", 12000.00, "2022-05-13 11:23:45", "190488J", false)`);
-    database.query(`INSERT INTO transactions VALUES(65468467, "d", 14000.00, "2022-03-15 11:23:45", "190488J", false)`);
-    database.query(`INSERT INTO transactions VALUES(12332555, "w", 17000.00, "2021-03-13 11:23:45", "190488J", false)`);
-    database.query(`INSERT INTO transactions VALUES(65468467, "d", 122000.00, "2021-03-15 11:23:45", "190488J", true)`);
+    database.query(`INSERT INTO transactions VALUES(12332555, "w", 12000.00, "2022-05-13 11:23:45", "190488J")`);
+    database.query(`INSERT INTO transactions VALUES(65468467, "d", 14000.00, "2022-03-15 11:23:45", "190488J")`);
+    database.query(`INSERT INTO transactions VALUES(12332555, "w", 17000.00, "2021-03-13 11:23:45", "190488J")`);
+    database.query(`INSERT INTO transactions VALUES(65468467, "d", 122000.00, "2021-03-15 11:23:45", "190488J")`);
 
     database.query("CALL calculateInterests();");
 
     database.query(`
-        CREATE EVENT add_savings_interests
-        ON SCHEDULE EVERY 1 MONTH
-        STARTS '2022-07-01 00:00:00'
-        DO
-            CALL calculateInterests();
+    CREATE EVENT add_savings_interests
+    ON SCHEDULE EVERY 1 MONTH
+    STARTS '2022-07-01 00:00:00'
+    DO
+        CALL calculateInterests();
     `);
    
     database.query(`
-        CREATE EVENT add_fd_interests
-        ON SCHEDULE EVERY 1 MONTH
-        STARTS '2022-07-01 00:00:00'
-        DO
-            CALL calFDInterests();
+    CREATE EVENT add_fd_interests
+    ON SCHEDULE EVERY 1 MONTH
+    STARTS '2022-07-01 00:00:00'
+    DO
+        CALL calFDInterests();
     `);
    
 }
