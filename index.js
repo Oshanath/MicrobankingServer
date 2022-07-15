@@ -1,6 +1,7 @@
 var express = require('express');
 const db = require("./database");
 var bodyParser = require('body-parser');
+const { query } = require('express');
 
 var app = express();
 var jsonParser = bodyParser.json()
@@ -13,6 +14,25 @@ app.use(bodyParser.urlencoded({
 
 app.get('/', function (req, res) {
    res.render('signin.ejs', { "r": "none" });
+});
+
+app.post("/agentSignIn", (req, res) => {
+
+   database.query(`SELECT * FROM agent WHERE agentID = ?`, [req.body.agentID], (err, result) => {
+      let r = {};
+
+      if(result.length == 0) r.result = "user not found";
+      else{
+         if(!db.compareHash(hash(req.body.password), result[0].password)){
+            r.result = "password mismatch";
+         }
+         else {
+            r.result = "success";
+         }
+      }
+
+      res.send(r);
+   });
 });
 
 app.post('/signin', function (req, res) {
@@ -177,36 +197,27 @@ app.post(`/normalTransaction`, function (req, res) {
 app.post("/agentSummary", (req, res) => {
    console.log(req.body);
 
-   database.query(`SELECT DISTINCT * FROM transactions WHERE agentID = ?`, [req.body.agentID], (err, result) => {
-
-      console.log(result);
-      let data = {};
-
-      for(let i = 0; i < result.length; i++){
-         let month = `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}`;
-         if(!data[month]){
-            data[month] = {
-               "trans": 1,
-               "with": result[i].trans_type === "w" ? 1 : 0,
-               "dep": result[i].trans_type === "d" ? 1 : 0
-            };
-         }
-         else{
-            data[month].trans += 1;  
-            if(result[i].trans_type === "w") data[month].with += 1;
-            else data[month].dep += 1;
-         }
-      }
-      console.log(data);
-
+   database.query(`SELECT DISTINCT * FROM transaction_agent_index WHERE agentID = ?`, [req.body.agentID], (err, result) => {
+      let data = countTransactions(result);
       res.render("home.ejs", {type: "agentSummary", "agentID": req.body.agentID, "accountNumber": "", data});
    });
 
 });
 
 app.post("/agentTransactions", (req, res) => {
-   console.log(req.body);
-   let data =[];
+   let query = "";
+
+   if(req.body.year === "" && req.body.month === "")
+      query = `SELECT DISTINCT * FROM transaction_agent_index WHERE agentID=? ORDER BY (datetime)`;
+
+   else if(req.body.month === "")
+      query = `SELECT DISTINCT * FROM transaction_agent_index WHERE agentID=? AND datetime BETWEEN 
+      '${req.body.year}-1-1 00:00:00' AND '${req.body.year}-12-31 23:59:59' ORDER BY (datetime)`;
+
+   else
+      query = `SELECT DISTINCT * FROM transaction_agent_index WHERE agentID=? AND datetime BETWEEN 
+      '${req.body.year}-${req.body.month}-1 00:00:00' AND
+      '${req.body.year}-${req.body.month}-${getDays(req.body.year, req.body.month)} 23:59:59' ORDER BY (datetime)`;
 
    database.query(`SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime)`, [req.body.agentID], (err, result) => {
 
@@ -227,13 +238,47 @@ app.post("/agentTransactions", (req, res) => {
 });
 
 app.post("/accountSummary", (req, res) => {
-   console.log(req.body);
-   res.render("home.ejs", {type: "accountSummary", "agentID": req.body.agentID, "accountNumber": ""});
+
+   database.query(`SELECT DISTINCT * FROM transaction_account_index WHERE number=?`, [req.body.accountNo], (err, result) => {
+      let data = countTransactions(result);
+      res.render("home.ejs", {type: "accountSummary", "agentID": "", "accountNumber": req.body.accountNo, data});
+   });
+
 });
 
 app.post("/accountTransactions", (req, res) => {
    console.log(req.body);
-   res.render("home.ejs", {type: "accountTransactions"});
+
+   let query = "";
+
+   if(req.body.year === "" && req.body.month === "")
+      query = `SELECT DISTINCT * FROM transaction_account_index WHERE number=? ORDER BY (datetime)`;
+
+   else if(req.body.month === "")
+      query = `SELECT DISTINCT * FROM transaction_account_index WHERE number=? AND datetime BETWEEN 
+      '${req.body.year}-1-1 00:00:00' AND '${req.body.year}-12-31 23:59:59' ORDER BY (datetime)`;
+
+   else
+      query = `SELECT DISTINCT * FROM transaction_account_index WHERE number=? AND datetime BETWEEN 
+      '${req.body.year}-${req.body.month}-1 00:00:00' AND
+      '${req.body.year}-${req.body.month}-${getDays(req.body.year, req.body.month)} 23:59:59' ORDER BY (datetime)`;
+
+   database.query(query, [req.body.accountNo], (err, result) => {
+      let data =[];
+
+      for(let i = 0; i < result.length; i++){
+         data.push({
+            month : `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}`,
+            agentID: result[i].agentID,
+            type: result[i].trans_type === "w" ? "Withdrawal" : "Deposit",
+            amount: result[i].amount,
+            date: `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}-${result[i].datetime.getDate()}`
+         });
+      }
+      console.log(data);
+
+      res.render("home.ejs", {type: "accountTransactions", "agentID": "", "accountNumber": req.body.accountNo, data});
+   });
 });
 
 // Express server
