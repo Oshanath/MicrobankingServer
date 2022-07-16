@@ -127,8 +127,8 @@ app.post(`/criticalTransaction`, function (req, res) {
    if (trasaction_type === `Withdraw`) {
       trans_var = 'w';
       database.query(`START TRANSACTION;`);
-      database.query(`UPDATE account SET balance = balance-${amount} where number = ${ac_number};`);
-      database.query(`INSERT INTO transactions VALUES (${ac_number},"${trans_var}",${amount},"${date_critical}","${agent_critical}");`);
+      database.query(`UPDATE account SET balance = balance-? where number = ?;`,[amount,ac_number]);
+      database.query(`INSERT INTO transactions VALUES (?,?,?,?,?);`,[ac_number,trans_var,amount,date_critical,agent_critical]);
       database.query(`COMMIT;`,(err, commitResult) =>{
          if(err != null){
             res.send(JSON.stringify({ "message": "fail" }));
@@ -137,8 +137,8 @@ app.post(`/criticalTransaction`, function (req, res) {
    }else if (trasaction_type === `Deposit`) {
       trans_var = 'd';
       database.query(`START TRANSACTION;`);
-      database.query(`UPDATE account SET balance = balance+${amount} where number = ${ac_number};`);
-      database.query(`INSERT INTO transactions VALUES (${ac_number},"${trans_var}",${amount},"${date_critical}","${agent_critical}");`);
+      database.query(`UPDATE account SET balance = balance+? where number = ?;`,[amount,ac_number]);
+      database.query(`INSERT INTO transactions VALUES (?,?,?,?,?);`,[ac_number,trans_var,amount,date_critical,agent_critical]);
       database.query(`COMMIT;`,(err, commitResult) =>{
          if(err != null){
             res.send(JSON.stringify({ "message": "fail" }));
@@ -172,7 +172,7 @@ app.post(`/normalTransaction`, function (req, res) {
          trans_type = 'w';
          database.query(`START TRANSACTION;`);
          database.query(`UPDATE account SET balance = balance-? where number = ?;`, [t_amount, t_accNo]);
-         database.query(`INSERT INTO transactions VALUES (?,"?",?,"?","?");`, [t_accNo, trans_type, t_amount, t_date, t_agent]);
+         database.query(`INSERT INTO transactions VALUES (?,?,?,?,?);`, [t_accNo, trans_type, t_amount, t_date, t_agent]);
          database.query(`COMMIT;`,(err, commitResult) =>{
             if(err != null){
                res.send(JSON.stringify({ "message": "fail" }));
@@ -181,8 +181,8 @@ app.post(`/normalTransaction`, function (req, res) {
       }else if(t_type === `Deposit`){
          trans_type = 'd';
          database.query(`START TRANSACTION;`);
-         database.query(`UPDATE account SET balance = balance+${t_amount} where number = ${t_accNo};`);
-         database.query(`INSERT INTO transactions VALUES (${t_accNo},"${trans_type}",${t_amount},"${t_date}","${t_agent}");`);
+         database.query(`UPDATE account SET balance = balance+? where number = ?;`, [t_amount,t_accNo]);
+         database.query(`INSERT INTO transactions VALUES (?,?,?,?,?);`, [t_accNo,trans_type,t_amount,t_date,t_agent]);
          database.query(`COMMIT;`,(err, commitResult) =>{
             if(err != null){
                res.send(JSON.stringify({ "message": "fail" }));
