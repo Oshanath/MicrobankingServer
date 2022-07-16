@@ -194,6 +194,10 @@ app.post(`/normalTransaction`, function (req, res) {
    
 });
 
+const getDays = (year, month) => {
+   return new Date(year, month, 0).getDate();
+};
+
 function countTransactions(result){
    let data = {};
 
