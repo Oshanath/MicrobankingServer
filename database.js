@@ -610,9 +610,9 @@ function dropTablesAndInsertDummyData() {
 
     database.query(`INSERT INTO transactions VALUES(1112345, 'w', 2000.00, '2020-05-23 11:23:45', '150F');`);
     database.query(`INSERT INTO transactions VALUES(1112345, 'd', 1000.00, '2020-05-23 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 300.00, '2020-05-23 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 20000.00, '2020-05-23 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 200.00, '2020-05-23 11:23:45', '150F');`);
+    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 300.00, '2020-06-23 11:23:45', '150F');`);
+    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 20000.00, '2020-06-23 11:23:45', '150F');`);
+    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 200.00, '2020-06-23 11:23:45', '150F');`);
 
     //database.query("CALL calculateInterests();");
 

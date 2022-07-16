@@ -248,6 +248,8 @@ app.post("/agentTransactions", (req, res) => {
 
    database.query(`SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime)`, [req.body.agentID], (err, result) => {
 
+      let data = [];
+
       for(let i = 0; i < result.length; i++){
          data.push({
             month : `${result[i].datetime.getFullYear()}-${result[i].datetime.getMonth() + 1}`,
