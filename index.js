@@ -233,20 +233,23 @@ app.post("/agentSummary", (req, res) => {
 
 app.post("/agentTransactions", (req, res) => {
    let query = "";
+   console.log(req.body);
 
    if(req.body.year === "" && req.body.month === "")
-      query = `SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime)`;
+      query = `SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime);`;
 
    else if(req.body.month === "")
-      query = `SELECT DISTINCT * FROM transactions WHERE agentID=? AND datetime BETWEEN 
-      '${req.body.year}-1-1 00:00:00' AND '${req.body.year}-12-31 23:59:59' ORDER BY (datetime)`;
+   query = `SELECT DISTINCT * FROM transactions WHERE agentID=? AND datetime BETWEEN 
+   '${req.body.year}-1-1 00:00:00' AND '${req.body.year}-12-31 23:59:59' ORDER BY (datetime)`;
 
    else
       query = `SELECT DISTINCT * FROM transactions WHERE agentID=? AND datetime BETWEEN 
       '${req.body.year}-${req.body.month}-1 00:00:00' AND
-      '${req.body.year}-${req.body.month}-${getDays(req.body.year, req.body.month)} 23:59:59' ORDER BY (datetime)`;
+      '${req.body.year}-${req.body.month}-${getDays(req.body.year, req.body.month)} 23:59:59' ORDER BY (datetime);`;
 
-   database.query(`SELECT DISTINCT * FROM transactions WHERE agentID=? ORDER BY (datetime)`, [req.body.agentID], (err, result) => {
+   console.log(query);
+
+   database.query(query, [req.body.agentID], (err, result) => {
 
       let data = [];
 
