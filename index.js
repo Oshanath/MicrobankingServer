@@ -6,7 +6,7 @@ var app = express();
 var jsonParser = bodyParser.json()
 // var urlencodedParser = bodyParser.urlencoded({ extended: false })
 var hash = db.hash;
-app.use(express.static('views'))
+
 app.use(bodyParser.urlencoded({
    extended: true
 }));
