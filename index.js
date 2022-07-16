@@ -171,8 +171,8 @@ app.post(`/normalTransaction`, function (req, res) {
       if( t_type === `Withdraw`){
          trans_type = 'w';
          database.query(`START TRANSACTION;`);
-         database.query(`UPDATE account SET balance = balance-${t_amount} where number = ${t_accNo};`);
-         database.query(`INSERT INTO transactions VALUES (${t_accNo},"${trans_type}",${t_amount},"${t_date}","${t_agent}");`);
+         database.query(`UPDATE account SET balance = balance-? where number = ?;`, [t_amount, t_accNo]);
+         database.query(`INSERT INTO transactions VALUES (?,"?",?,"?","?");`, [t_accNo, trans_type, t_amount, t_date, t_agent]);
          database.query(`COMMIT;`,(err, commitResult) =>{
             if(err != null){
                res.send(JSON.stringify({ "message": "fail" }));

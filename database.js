@@ -83,8 +83,8 @@ function dropTablesAndInsertDummyData() {
     database.query(`DROP TABLE IF EXISTS account_registered;`);         // done
     database.query(`DROP TABLE IF EXISTS account_critical;`);           // done
     database.query(`DROP TABLE IF EXISTS account_pin`);                 // done
-    database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
-    database.query(`DROP TABLE IF EXISTS transactions;`);
+    database.query(`DROP TABLE IF EXISTS fixed_deposit;`);              // done
+    database.query(`DROP TABLE IF EXISTS transactions;`);               // done
     database.query(`DROP TABLE IF EXISTS account;`);                    // done
     database.query(`DROP TABLE IF EXISTS customer;`);                   // done
     database.query(`DROP TABLE IF EXISTS agent;`);                      // done
@@ -133,7 +133,8 @@ function dropTablesAndInsertDummyData() {
         number INT, 
         nic VARCHAR(20), 
         FOREIGN KEY (number) REFERENCES account(number), 
-        FOREIGN KEY (nic) REFERENCES customer(nic)
+        FOREIGN KEY (nic) REFERENCES customer(nic),
+        PRIMARY KEY (number, nic)
     );`);
         
     database.query(`CREATE TABLE account_critical(
@@ -180,6 +181,7 @@ function dropTablesAndInsertDummyData() {
         amount NUMERIC(12,2) NOT NULL,
         datetime DATETIME NOT NULL,
         agentID VARCHAR(20),
+        CHECK(trans_type in ('w', 'd')),
         FOREIGN KEY (agentID) REFERENCES agent(agentID),
         FOREIGN KEY (number) REFERENCES account(number)
     )`);
