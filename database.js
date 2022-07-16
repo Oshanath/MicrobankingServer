@@ -604,48 +604,8 @@ function dropTablesAndInsertDummyData() {
     database.query(`INSERT INTO account_pin VALUES(3487520, ?)`, [hash("354")]);
     database.query(`INSERT INTO account_pin VALUES(2340587, ?)`, [hash("647")]);
 
-    // ---------------------Fixed deposit------------------------------------------------------------------
-
-    database.query(`INSERT INTO fixed_deposit VALUES(86644585, 1112345, 100000.00, '3y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(37458583, 1112345, 678000.00, '1y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(34634522, 1112345, 55000.00, '1y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(78588532, 1002541, 87000.00, '3y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(59883575, 2456899, 430000.00, '6m');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(23555336, 2311556, 100000.00, '1y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(74456366, 3346231, 700000.00, '6m');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(86477756, 3723113, 566000.00, '3y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(24566744, 4532557, 50000.00, '1y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(90088977, 2114886, 45000.00, '1y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(56787765, 5029611, 200000.00, '3y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(36674485, 9021001, 300000.00, '3y');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(95674332, 8342064, 580000.00, '6m');`);
-    database.query(`INSERT INTO fixed_deposit VALUES(56743356, 7290623, 1000000.00, '3y');`);
-
-    // ----------------------Transactions----------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
     
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 2000.00, '2021-05-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 1300.00, '2021-05-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'w', 500.00, '2021-05-15 11:23:45', '654T');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 5100.00, '2021-06-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'w', 8000.00, '2021-06-15 11:23:45', '132W');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'd', 5600.00, '2021-07-15 11:23:45', '450U');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'd', 3300.00, '2021-07-15 11:23:45', '220K');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'w', 2000.00, '2021-07-15 11:23:45', '111G');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 1000.00, '2021-07-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 400.00, '2021-09-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'd', 4500.00, '2021-09-15 11:23:45', '210F');`);
-
-    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 2000.00, '2022-02-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 20000.00, '2022-02-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'w', 58000.00, '2022-02-15 11:23:45', '654T');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'd', 4000.00, '2022-03-15 11:23:45', '132W');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 4000.00, '2022-03-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'w', 45000.00, '2022-10-15 11:23:45', '450U');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'w', 22000.00, '2022-11-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1112345, 'd', 1000.00, '2022-11-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'w', 6000.00, '2022-12-15 11:23:45', '150F');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'd', 60000.00, '2022-12-15 11:23:45', '220K');`);
-    database.query(`INSERT INTO transactions VALUES(1113544, 'd', 3600.00, '2022-12-15 11:23:45', '210F');`);
 
     //database.query("CALL calculateInterests();");
 
