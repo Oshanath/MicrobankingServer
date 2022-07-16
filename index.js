@@ -63,14 +63,17 @@ app.get('/syncAgent/:agentID', function (req, res) {
    let agentID = req.params.agentID;
    console.log("sync agent");
 
-   database.query(`SELECT DISTINCT * FROM
+   database.query(`SELECT DISTINCT number, nic, balance, type,  registered, pin FROM
       account INNER JOIN account_registered USING(number)
       INNER JOIN account_customer USING(number) 
       INNER JOIN customer USING(nic) 
       INNER JOIN account_pin USING(number)
-      where registered = true;`, 
+      INNER JOIN area USING (code)
+      INNER JOIN agent USING (code)
+      where registered = true AND
+      agentID = ?
+      ;`, [agentID], 
    (err, result) => {
-
       for(let j = 0; j < result.length; j++){
          let  pinBuffer = result[j].pin;
          let pinArray = [];
