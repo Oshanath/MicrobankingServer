@@ -209,19 +209,27 @@ function dropTablesAndInsertDummyData() {
             FETCH curs INTO num,bal,acType;
 
             IF acType = 'child' THEN
-                set bal = bal + bal * 0.12;
+                START TRANSACTION;
+                UPDATE account SET balance = balance + balance*0.12 WHERE number = num;
+                COMMIT;
             ELSEIF acType = 'teen' AND bal >= 500 THEN
-                set bal = bal + bal * 0.11;
+                START TRANSACTION;
+                UPDATE account SET balance = balance + balance*0.11 WHERE number = num;
+                COMMIT;
             ELSEIF acType = 'adult' AND bal >= 1000 THEN
-                set bal = bal + bal * 0.1;
+                START TRANSACTION;
+                UPDATE account SET balance = balance + balance*0.1 WHERE number = num;
+                COMMIT;
             ELSEIF acType = 'senior' AND bal >= 1000 THEN
-                set bal = bal + bal * 0.13;
+                START TRANSACTION;
+                UPDATE account SET balance = balance + balance*0.13 WHERE number = num;
+                COMMIT;
             ELSEIF acType = 'joint' AND bal >= 5000 THEN
-                set bal = bal + bal * 0.07;
+                START TRANSACTION;
+                UPDATE account SET balance = balance + balance*0.07 WHERE number = num;
+                COMMIT;
             END IF;
-            START TRANSACTION;
-            UPDATE account SET balance = bal WHERE number = num;
-            COMMIT;
+           
                 
         UNTIL bdone END REPEAT;
         CLOSE curs;
@@ -599,7 +607,7 @@ function dropTablesAndInsertDummyData() {
     // ---------------------------------------------------------------------------------------
     
 
-    database.query("CALL calculateInterests();");
+    //database.query("CALL calculateInterests();");
 
     database.query(`
     CREATE EVENT add_savings_interests
