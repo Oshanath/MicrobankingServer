@@ -79,17 +79,17 @@ async function calculateInterests() {
 }
 
 function dropTablesAndInsertDummyData() {
-    database.query(`DROP TABLE IF EXISTS account_customer;`);
-    database.query(`DROP TABLE IF EXISTS account_registered;`);
-    database.query(`DROP TABLE IF EXISTS account_critical;`);
-    database.query(`DROP TABLE IF EXISTS account_pin`);
+    database.query(`DROP TABLE IF EXISTS account_customer;`);           // done
+    database.query(`DROP TABLE IF EXISTS account_registered;`);         // done
+    database.query(`DROP TABLE IF EXISTS account_critical;`);           // done
+    database.query(`DROP TABLE IF EXISTS account_pin`);                 // done
     database.query(`DROP TABLE IF EXISTS fixed_deposit;`);
     database.query(`DROP TABLE IF EXISTS transactions;`);
-    database.query(`DROP TABLE IF EXISTS account;`);
-    database.query(`DROP TABLE IF EXISTS customer;`);
-    database.query(`DROP TABLE IF EXISTS agent;`);
-    database.query(`DROP TABLE IF EXISTS area`);
-    database.query(`DROP TABLE IF EXISTS manager;`)
+    database.query(`DROP TABLE IF EXISTS account;`);                    // done
+    database.query(`DROP TABLE IF EXISTS customer;`);                   // done
+    database.query(`DROP TABLE IF EXISTS agent;`);                      // done
+    database.query(`DROP TABLE IF EXISTS area`);                        // done
+    database.query(`DROP TABLE IF EXISTS manager;`);                    // done
 
     database.query("DROP PROCEDURE IF EXISTS calculateInterests");
     database.query("DROP PROCEDURE IF EXISTS calFDInterests");
@@ -266,73 +266,338 @@ function dropTablesAndInsertDummyData() {
     
     END`);
 
-    database.query(`INSERT INTO account VALUES (12332555, 45666.56, "joint");`);
-    database.query(`INSERT INTO account VALUES (65468467, 45666.56, "joint");`);
-    database.query(`INSERT INTO account VALUES (34635764, 45666.56, "child");`);
-    database.query(`INSERT INTO account VALUES (33455546, 45666.56, "child");`);
-    database.query(`INSERT INTO account VALUES (85469699, 45666.56, "adult");`);
-    database.query(`INSERT INTO account VALUES (45673858, 45666.56, "teen");`);
-    database.query(`INSERT INTO account VALUES (09887755, 45666.56, "teen");`);
-    database.query(`INSERT INTO account VALUES (16683568, 45666.56, "adult");`);
-    database.query(`INSERT INTO account VALUES (23580987, 45666.56, "adult");`);
-    database.query(`INSERT INTO account VALUES (10885446, 45666.56, "adult");`);
-    database.query(`INSERT INTO account VALUES (65584445, 45666.56, "senior");`);
-    database.query(`INSERT INTO account VALUES (78654555, 45666.56, "senior");`);
+    database.query(`INSERT INTO area VALUES(1, "Colombo");`);
+    database.query(`INSERT INTO area VALUES(2, "Moratuwa");`);
+    database.query(`INSERT INTO area VALUES(3, "Wattala");`);
+    database.query(`INSERT INTO area VALUES(4, "Kelaniya");`);
+    database.query(`INSERT INTO area VALUES(5, "Ragama");`);
+    database.query(`INSERT INTO area VALUES(6, "Maharagama");`);
+    database.query(`INSERT INTO area VALUES(7, "Jaela");`);
+    database.query(`INSERT INTO area VALUES(8, "Homagama");`);
+    database.query(`INSERT INTO area VALUES(9, "Kottawa");`);
+    database.query(`INSERT INTO area VALUES(10, "Kotte");`);
 
-    database.query(`INSERT INTO account_registered VALUES(12332555, true);`);
-    database.query(`INSERT INTO account_registered VALUES(65468467, true);`);
-    database.query(`INSERT INTO account_registered VALUES(85469699, true);`);
-    database.query(`INSERT INTO account_registered VALUES(16683568, true);`);
-    database.query(`INSERT INTO account_registered VALUES(23580987, true);`);
-    database.query(`INSERT INTO account_registered VALUES(10885446, true);`);
-    database.query(`INSERT INTO account_registered VALUES(65584445, false);`);
-    database.query(`INSERT INTO account_registered VALUES(78654555, false);`);
+    database.query(`INSERT INTO agent VALUES("150F", "Oshanath", ?, 1);`, [hash("osh")]);
+    database.query(`INSERT INTO agent VALUES("654T", "Thilina", ?, 2);`, [hash("thi")]);
+    database.query(`INSERT INTO agent VALUES("132W", "Gamunu", ?, 3);`, [hash("gam")]);
+    database.query(`INSERT INTO agent VALUES("450U", "Pasan" , ?, 4);`, [hash("pas")]);
+    database.query(`INSERT INTO agent VALUES("220K", "Hirusha", ?, 5);`, [hash("hire")]);
+    database.query(`INSERT INTO agent VALUES("111G", "Sampath", ?, 6);`, [hash("sam")]);
+    database.query(`INSERT INTO agent VALUES("210F", "Lasantha" , ?, 7);`, [hash("lai")]);
+    database.query(`INSERT INTO agent VALUES("189X", "Duleep", ?, 8);`, [hash("dup")]);
+    database.query(`INSERT INTO agent VALUES("400Z", "Ganga", ?, 9);`, [hash("gag")]);
+    database.query(`INSERT INTO agent VALUES("750R", "Ravindu", ?, 10);`, [hash("rar")]);
 
-    database.query(`INSERT INTO area VALUES(1, "Nugegoda")`);
-    database.query(`INSERT INTO area VALUES(2, "Moratuwa")`);
-    
-    database.query("INSERT INTO agent VALUES(\"190488J\", \"Oshanath\", ?, 1);", [hash("password")]);
-    database.query("INSERT INTO agent VALUES(\"aa\", \"Rajawasam\", ?, 2);", [hash("aa")]);
+    // ------------------------Accounts--------------------------------------------------------------
+    database.query(`INSERT INTO account VALUES(1112345, 45000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(1225574, 64000.00, "Joint")`);
+    database.query(`INSERT INTO account VALUES(1113544, 34000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(1002541, 67000.00, "Child")`);
+    database.query(`INSERT INTO account VALUES(2456899, 76000.00, "Adult")`);
 
-    database.query("INSERT INTO customer VALUES(\"991741135v\", \"Lasith\", 1);");
-    database.query("INSERT INTO customer VALUES(\"246757377f\", \"Ravindu\", 1);");
-    database.query("INSERT INTO customer VALUES(\"34634g575jj\", \"Thilina\", 2);");
-    database.query("INSERT INTO customer VALUES(\"rsgrrd44646\", \"Madaya\", 2);");
+    database.query(`INSERT INTO account VALUES(5666320, 48000.00, "Joint")`);
+    database.query(`INSERT INTO account VALUES(5638265, 64000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(1223346, 99000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(3746887, 67000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2311556, 76000.00, "Teen")`);
 
-    database.query("INSERT INTO account_customer VALUES(12332555, \"991741135v\");"); // joint lasith ravindu
-    database.query("INSERT INTO account_customer VALUES(12332555, \"246757377f\");"); // joint lasith ravindu
-    database.query("INSERT INTO account_customer VALUES(65468467, \"991741135v\");");
-    database.query("INSERT INTO account_customer VALUES(34635764, \"991741135v\");");
-    database.query("INSERT INTO account_customer VALUES(33455546, \"246757377f\");");
-    database.query("INSERT INTO account_customer VALUES(45673858, \"246757377f\");");
-    database.query("INSERT INTO account_customer VALUES(09887755, \"34634g575jj\");");
-    database.query("INSERT INTO account_customer VALUES(09887755, \"rsgrrd44646\");");
-    database.query("INSERT INTO account_customer VALUES(10885446, \"rsgrrd44646\");");
+    database.query(`INSERT INTO account VALUES(3346231, 87000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(3723113, 44000.00, "Teen")`);
+    database.query(`INSERT INTO account VALUES(4532557, 48000.00, "Joint")`);
+    database.query(`INSERT INTO account VALUES(6632222, 65000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2321678, 75000.00, "Adult")`);
 
-    database.query("INSERT INTO account_critical VALUES(12332555, true);");
-    database.query("INSERT INTO account_critical VALUES(34635764, false);");
-    database.query("INSERT INTO account_critical VALUES(33455546, false);");
-    database.query("INSERT INTO account_critical VALUES(85469699, true);");
-    database.query("INSERT INTO account_critical VALUES(45673858, false);");
-    database.query("INSERT INTO account_critical VALUES(09887755, false);");
-    database.query("INSERT INTO account_critical VALUES(16683568, false);");
-    database.query("INSERT INTO account_critical VALUES(23580987, true);");
-    database.query("INSERT INTO account_critical VALUES(10885446, false);");
+    database.query(`INSERT INTO account VALUES(8589953, 33000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2114886, 35000.00, "Child")`);
+    database.query(`INSERT INTO account VALUES(5029611, 566000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(9021001, 97000.00, "Teen")`);
+    database.query(`INSERT INTO account VALUES(1202009, 77000.00, "Child")`);
 
-    database.query(`INSERT INTO account_pin VALUES(10885446, ?)`, [hash("1234")]);
-    database.query(`INSERT INTO account_pin VALUES(12332555, ?)`, [hash("5678")]);
-    database.query(`INSERT INTO account_pin VALUES(65468467, ?)`, [hash("9101")]);
-    database.query(`INSERT INTO account_pin VALUES(85469699, ?)`, [hash("6447")]);
-    database.query(`INSERT INTO account_pin VALUES(16683568, ?)`, [hash("4545")]);
-    database.query(`INSERT INTO account_pin VALUES(23580987, ?)`, [hash("9000")]);
-    database.query(`INSERT INTO account_pin VALUES(45673858, ?)`, [hash("1212")]);
+    database.query(`INSERT INTO account VALUES(8769199, 57000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(6328671, 46000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2762346, 54000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2638228, 67000.00, "Teen")`);
+    database.query(`INSERT INTO account VALUES(6773920, 99000.00, "Adult")`);
+
+    database.query(`INSERT INTO account VALUES(8342064, 200000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(3629026, 22000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(7290623, 166000.00, "Teen")`);
+    database.query(`INSERT INTO account VALUES(9030221, 655000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(5029684, 85000.00, "Child")`);
+
+    database.query(`INSERT INTO account VALUES(2039454, 63000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(1139749, 37000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(1394233, 69000.00, "Child")`);
+    database.query(`INSERT INTO account VALUES(1389002, 75000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(3201044, 35000.00, "Joint")`);
+
+    database.query(`INSERT INTO account VALUES(5932012, 25000.00, "Teen")`);
+    database.query(`INSERT INTO account VALUES(1839453, 27000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(7623112, 144000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2231091, 99000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(1023637, 16000.00, "Child")`);
+
+    database.query(`INSERT INTO account VALUES(3222432, 4000.00, "Joint")`);
+    database.query(`INSERT INTO account VALUES(2199211, 455000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(7236500, 66000.00, "Senior")`);
+    database.query(`INSERT INTO account VALUES(1023739, 27000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(7192305, 54000.00, "Teen")`);
+
+    database.query(`INSERT INTO account VALUES(5192021, 45000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(7443216, 64000.00, "Joint")`);
+    database.query(`INSERT INTO account VALUES(6002123, 34000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2903480, 67000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2346575, 76000.00, "Senior")`);
+
+    database.query(`INSERT INTO account VALUES(1124677, 33000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2346441, 44000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(7261291, 4000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(1735103, 668000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(3487520, 900000.00, "Adult")`);
+    database.query(`INSERT INTO account VALUES(2340587, 56000.00, "Senior")`);
+
+    // ---------------------------Customers--------------------------------------------------------------
+
+    database.query(`INSERT INTO customer VALUES("199824872316", "Lasith", 1);`);
+    database.query(`INSERT INTO customer VALUES("872681325v", "Ravindu", 6);`);
+    database.query(`INSERT INTO customer VALUES("755290243v", "Kalani", 4);`);
+    database.query(`INSERT INTO customer VALUES("651741135v", "Sunil", 7);`);
+    database.query(`INSERT INTO customer VALUES("196727006738", "akash", 5);`);
+
+    database.query(`INSERT INTO customer VALUES("751266732v", "Tharusha", 6);`);
+    database.query(`INSERT INTO customer VALUES("778452259v", "Priyantha", 9);`);
+    database.query(`INSERT INTO customer VALUES("199262003751", "Sanduni", 1);`);
+    database.query(`INSERT INTO customer VALUES("198240001893", "Madhawa", 3);`);
+    database.query(`INSERT INTO customer VALUES("628345774v", "lakshani", 9);`);
+
+    database.query(`INSERT INTO customer VALUES("693475692v", "Isuru", 9);`);
+    database.query(`INSERT INTO customer VALUES("197838475455", "Kanishka", 2);`);
+    database.query(`INSERT INTO customer VALUES("917456928v", "Charitha", 5);`);
+    database.query(`INSERT INTO customer VALUES("198739824945", "Hasarangi", 2);`);
+    database.query(`INSERT INTO customer VALUES("597817365v", "Gayan", 4);`);
+
+    database.query(`INSERT INTO customer VALUES("196782347534", "Kasun", 7);`);
+    database.query(`INSERT INTO customer VALUES("983475294v", "Fathima", 10);`);
+    database.query(`INSERT INTO customer VALUES("877903485v", "asantha", 7);`);
+    database.query(`INSERT INTO customer VALUES("761981729v", "Vinuri", 9);`);
+    database.query(`INSERT INTO customer VALUES("830185154v", "Avishka", 8);`);
+
+    database.query(`INSERT INTO customer VALUES("55666336v", "Erandi", 4);`);
+    database.query(`INSERT INTO customer VALUES("197989103573", "Akila", 8);`);
+    database.query(`INSERT INTO customer VALUES("197629346913", "Wenuka ", 7);`);
+    database.query(`INSERT INTO customer VALUES("246774774v", "Thilini", 3);`);
+    database.query(`INSERT INTO customer VALUES("23246547747", "Kalana", 3);`);
+
+    database.query(`INSERT INTO customer VALUES("4446646778", "Dulanji", 8);`);
+    database.query(`INSERT INTO customer VALUES("24647466v", "Eshan", 6);`);
+    database.query(`INSERT INTO customer VALUES("198719843579", "Ravindi", 1);`);
+    database.query(`INSERT INTO customer VALUES("619123642v", "Bimsara", 8);`);
+    database.query(`INSERT INTO customer VALUES("588735413v", "Praveen", 7);`);
+
+    database.query(`INSERT INTO customer VALUES("24466747v", "Hasindri", 7);`);
+    database.query(`INSERT INTO customer VALUES("1778906884", "Sakuni", 4);`);
+    database.query(`INSERT INTO customer VALUES("246793333", "Dinuka", 8);`);
+    database.query(`INSERT INTO customer VALUES("198891826351", "Ahmed", 3);`);
+    database.query(`INSERT INTO customer VALUES("196189823453", "Ovini", 9);`);
+
+    database.query(`INSERT INTO customer VALUES("832948923v", "Sasini", 10);`);
+    database.query(`INSERT INTO customer VALUES("77868555v", "Thisara", 6);`);
+    database.query(`INSERT INTO customer VALUES("247774789v", "Harsha", 6);`);
+    database.query(`INSERT INTO customer VALUES("95563377v", "Induwari", 6);`);
+    database.query(`INSERT INTO customer VALUES("46678447v", "Pasindu", 1);`);
+    database.query(`INSERT INTO customer VALUES("639126358v", "Banuka", 5);`);
+
+    // --------------------------Manager----------------------------------------------------------------
 
     database.query(`INSERT INTO manager VALUES("root", ?)`, [hash("roots")]);
 
-    database.query(`INSERT INTO transactions VALUES(12332555, "w", 12000.00, "2022-05-13 11:23:45", "190488J")`);
-    database.query(`INSERT INTO transactions VALUES(65468467, "d", 14000.00, "2022-03-15 11:23:45", "190488J")`);
-    database.query(`INSERT INTO transactions VALUES(12332555, "w", 17000.00, "2021-03-13 11:23:45", "190488J")`);
-    database.query(`INSERT INTO transactions VALUES(65468467, "d", 122000.00, "2021-03-15 11:23:45", "190488J")`);
+    // -----------------------Account customer----------------------------------------------------------
+
+    database.query(`INSERT INTO account_customer VALUES(1112345, "199824872316");`);
+    database.query(`INSERT INTO account_customer VALUES(1225574, "872681325v");`);
+    database.query(`INSERT INTO account_customer VALUES(1225574, "755290243v");`);
+    database.query(`INSERT INTO account_customer VALUES(1113544, "651741135v");`);
+    database.query(`INSERT INTO account_customer VALUES(1002541, "196727006738");`);
+
+    database.query(`INSERT INTO account_customer VALUES(2456899, "751266732v");`);
+    database.query(`INSERT INTO account_customer VALUES(5666320, "778452259v");`);
+    database.query(`INSERT INTO account_customer VALUES(5666320, "199262003751");`);
+    database.query(`INSERT INTO account_customer VALUES(5638265, "198240001893");`);
+    database.query(`INSERT INTO account_customer VALUES(1223346, "628345774v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(3746887, "693475692v");`);
+    database.query(`INSERT INTO account_customer VALUES(2311556, "197838475455");`);
+    database.query(`INSERT INTO account_customer VALUES(3346231, "917456928v");`);
+    database.query(`INSERT INTO account_customer VALUES(3723113, "198739824945");`);
+    database.query(`INSERT INTO account_customer VALUES(4532557, "597817365v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(4532557, "196782347534");`);
+    database.query(`INSERT INTO account_customer VALUES(6632222, "983475294v");`);
+    database.query(`INSERT INTO account_customer VALUES(8589953, "761981729v");`);
+    database.query(`INSERT INTO account_customer VALUES(2114886, "830185154v");`);
+    database.query(`INSERT INTO account_customer VALUES(5029611, "55666336v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(9021001, "197989103573");`);
+    database.query(`INSERT INTO account_customer VALUES(1202009, "197629346913");`);
+    database.query(`INSERT INTO account_customer VALUES(8769199, "246774774v");`);
+    database.query(`INSERT INTO account_customer VALUES(6328671, "23246547747");`);
+    database.query(`INSERT INTO account_customer VALUES(2762346, "4446646778");`);
+
+    database.query(`INSERT INTO account_customer VALUES(2638228, "24647466v");`);
+    database.query(`INSERT INTO account_customer VALUES(6773920, "198719843579");`);
+    database.query(`INSERT INTO account_customer VALUES(8342064, "619123642v");`);
+    database.query(`INSERT INTO account_customer VALUES(3629026, "588735413v");`);
+    database.query(`INSERT INTO account_customer VALUES(7290623, "24466747v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(9030221, "1778906884");`);
+    database.query(`INSERT INTO account_customer VALUES(5029684, "246793333");`);
+    database.query(`INSERT INTO account_customer VALUES(2039454, "198891826351");`);
+    database.query(`INSERT INTO account_customer VALUES(1139749, "196189823453");`);
+    database.query(`INSERT INTO account_customer VALUES(1394233, "832948923v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(1389002, "77868555v");`);
+    database.query(`INSERT INTO account_customer VALUES(3201044, "247774789v");`);
+    database.query(`INSERT INTO account_customer VALUES(3201044, "95563377v");`);
+    database.query(`INSERT INTO account_customer VALUES(5932012, "46678447v");`);
+    database.query(`INSERT INTO account_customer VALUES(1839453, "639126358v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(7623112, "199824872316");`);
+    database.query(`INSERT INTO account_customer VALUES(2231091, "755290243v");`);
+    database.query(`INSERT INTO account_customer VALUES(1023637, "196727006738");`);
+    database.query(`INSERT INTO account_customer VALUES(3222432, "751266732v");`);
+    database.query(`INSERT INTO account_customer VALUES(3222432, "778452259v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(2199211, "628345774v");`);
+    database.query(`INSERT INTO account_customer VALUES(7236500, "597817365v");`);
+    database.query(`INSERT INTO account_customer VALUES(1023739, "877903485v");`);
+    database.query(`INSERT INTO account_customer VALUES(7192305, "197989103573");`);
+    database.query(`INSERT INTO account_customer VALUES(5192021, "23246547747");`);
+
+    database.query(`INSERT INTO account_customer VALUES(7443216, "619123642v");`);
+    database.query(`INSERT INTO account_customer VALUES(7443216, "588735413v");`);
+    database.query(`INSERT INTO account_customer VALUES(6002123, "1778906884");`);
+    database.query(`INSERT INTO account_customer VALUES(2903480, "247774789v");`);
+    database.query(`INSERT INTO account_customer VALUES(2346575, "639126358v");`);
+
+    database.query(`INSERT INTO account_customer VALUES(1124677, "778452259v");`);
+    database.query(`INSERT INTO account_customer VALUES(2346441, "877903485v");`);
+    database.query(`INSERT INTO account_customer VALUES(7261291, "23246547747");`);
+    database.query(`INSERT INTO account_customer VALUES(1735103, "1778906884");`);
+    database.query(`INSERT INTO account_customer VALUES(3487520, "247774789v");`);
+    database.query(`INSERT INTO account_customer VALUES(2340587, "639126358v");`);
+
+    // ----------------------Account registered---------------------------------------------------------------
+
+    database.query(`INSERT INTO account_registered VALUES(1112345, true)`);
+    database.query(`INSERT INTO account_registered VALUES(1225574, true)`);
+    database.query(`INSERT INTO account_registered VALUES(1113544, true)`);
+    database.query(`INSERT INTO account_registered VALUES(2456899, false)`);
+    database.query(`INSERT INTO account_registered VALUES(5666320, true)`);
+    database.query(`INSERT INTO account_registered VALUES(5638265, false)`);
+
+    database.query(`INSERT INTO account_registered VALUES(1223346, true)`);
+    database.query(`INSERT INTO account_registered VALUES(3746887, false)`);
+    database.query(`INSERT INTO account_registered VALUES(3346231, false)`);
+    database.query(`INSERT INTO account_registered VALUES(4532557, true)`);
+    database.query(`INSERT INTO account_registered VALUES(6632222, false)`);
+    database.query(`INSERT INTO account_registered VALUES(2321678, true)`);
+
+    database.query(`INSERT INTO account_registered VALUES(8589953, false)`);
+    database.query(`INSERT INTO account_registered VALUES(5029611, true)`);
+    database.query(`INSERT INTO account_registered VALUES(8769199, true)`);
+    database.query(`INSERT INTO account_registered VALUES(6328671, true)`);
+    database.query(`INSERT INTO account_registered VALUES(2762346, false)`);
+    database.query(`INSERT INTO account_registered VALUES(6773920, false)`);
+
+    database.query(`INSERT INTO account_registered VALUES(8342064, true)`);
+    database.query(`INSERT INTO account_registered VALUES(3629026, false)`);
+    database.query(`INSERT INTO account_registered VALUES(9030221, false)`);
+    database.query(`INSERT INTO account_registered VALUES(2039454, true)`);
+    database.query(`INSERT INTO account_registered VALUES(1139749, true)`);
+    database.query(`INSERT INTO account_registered VALUES(1389002, true)`);
+
+    database.query(`INSERT INTO account_registered VALUES(1839453, false)`);
+    database.query(`INSERT INTO account_registered VALUES(7623112, false)`);
+    database.query(`INSERT INTO account_registered VALUES(2231091, true)`);
+    database.query(`INSERT INTO account_registered VALUES(3222432, false)`);
+    database.query(`INSERT INTO account_registered VALUES(2199211, true)`);
+    database.query(`INSERT INTO account_registered VALUES(7236500, true)`);
+
+    database.query(`INSERT INTO account_registered VALUES(1023739, false)`);
+    database.query(`INSERT INTO account_registered VALUES(5192021, false)`);
+    database.query(`INSERT INTO account_registered VALUES(7443216, true)`);
+    database.query(`INSERT INTO account_registered VALUES(6002123, true)`);
+    database.query(`INSERT INTO account_registered VALUES(2903480, true)`);
+    database.query(`INSERT INTO account_registered VALUES(2346575, true)`);
+
+    database.query(`INSERT INTO account_registered VALUES(1124677, false)`);
+    database.query(`INSERT INTO account_registered VALUES(2346441, true)`);
+    database.query(`INSERT INTO account_registered VALUES(7261291, false)`);
+    database.query(`INSERT INTO account_registered VALUES(1735103, true)`);
+    database.query(`INSERT INTO account_registered VALUES(3487520, true)`);
+    database.query(`INSERT INTO account_registered VALUES(2340587, true)`);
+
+    // ---------------------------Account critical------------------------------------------------------
+
+    database.query(`INSERT INTO account_critical VALUES(1112345, false);`);
+    database.query(`INSERT INTO account_critical VALUES(1113544, true);`);
+    database.query(`INSERT INTO account_critical VALUES(1223346, false);`);
+    database.query(`INSERT INTO account_critical VALUES(2321678, true);`);
+    database.query(`INSERT INTO account_critical VALUES(5029611, true);`);
+    
+    database.query(`INSERT INTO account_critical VALUES(8769199, false);`);
+    database.query(`INSERT INTO account_critical VALUES(6328671, false);`);
+    database.query(`INSERT INTO account_critical VALUES(8342064, false);`);
+    database.query(`INSERT INTO account_critical VALUES(2039454, false);`);
+    database.query(`INSERT INTO account_critical VALUES(1139749, true);`);
+    database.query(`INSERT INTO account_critical VALUES(1389002, true);`);
+
+    database.query(`INSERT INTO account_critical VALUES(2231091, false);`);
+    database.query(`INSERT INTO account_critical VALUES(2199211, true);`);
+    database.query(`INSERT INTO account_critical VALUES(7236500, false);`);
+    database.query(`INSERT INTO account_critical VALUES(6002123, true);`);
+    database.query(`INSERT INTO account_critical VALUES(2903480, true);`);
+    database.query(`INSERT INTO account_critical VALUES(2346575, true);`);
+
+    database.query(`INSERT INTO account_critical VALUES(2346441, true);`);
+    database.query(`INSERT INTO account_critical VALUES(1735103, false);`);
+    database.query(`INSERT INTO account_critical VALUES(3487520, true);`);
+    database.query(`INSERT INTO account_critical VALUES(2340587, false);`);
+
+    // ---------------------------------------------------------------------------
+
+    database.query(`INSERT INTO account_pin VALUES(1112345, ?)`, [hash("984")]);
+    database.query(`INSERT INTO account_pin VALUES(1225574, ?)`, [hash("995")]);
+    database.query(`INSERT INTO account_pin VALUES(1113544, ?)`, [hash("846")]);
+    database.query(`INSERT INTO account_pin VALUES(5666320, ?)`, [hash("154")]);
+    database.query(`INSERT INTO account_pin VALUES(1223346, ?)`, [hash("956")]);
+
+    database.query(`INSERT INTO account_pin VALUES(4532557, ?)`, [hash("259")]);
+    database.query(`INSERT INTO account_pin VALUES(2321678, ?)`, [hash("938")]);
+    database.query(`INSERT INTO account_pin VALUES(5029611, ?)`, [hash("693")]);
+    database.query(`INSERT INTO account_pin VALUES(8769199, ?)`, [hash("587")]);
+    database.query(`INSERT INTO account_pin VALUES(6328671, ?)`, [hash("360")]);
+
+    database.query(`INSERT INTO account_pin VALUES(8342064, ?)`, [hash("773")]);
+    database.query(`INSERT INTO account_pin VALUES(2039454, ?)`, [hash("423")]);
+    database.query(`INSERT INTO account_pin VALUES(1139749, ?)`, [hash("590")]);
+    database.query(`INSERT INTO account_pin VALUES(1389002, ?)`, [hash("499")]);
+    database.query(`INSERT INTO account_pin VALUES(2231091, ?)`, [hash("938")]);
+
+    database.query(`INSERT INTO account_pin VALUES(2199211, ?)`, [hash("861")]);
+    database.query(`INSERT INTO account_pin VALUES(7236500, ?)`, [hash("505")]);
+    database.query(`INSERT INTO account_pin VALUES(7443216, ?)`, [hash("267")]);
+    database.query(`INSERT INTO account_pin VALUES(6002123, ?)`, [hash("858")]);
+    database.query(`INSERT INTO account_pin VALUES(2903480, ?)`, [hash("748")]);
+
+    database.query(`INSERT INTO account_pin VALUES(2346575, ?)`, [hash("906")]);
+    database.query(`INSERT INTO account_pin VALUES(2346441, ?)`, [hash("366")]);
+    database.query(`INSERT INTO account_pin VALUES(1735103, ?)`, [hash("983")]);
+    database.query(`INSERT INTO account_pin VALUES(3487520, ?)`, [hash("354")]);
+    database.query(`INSERT INTO account_pin VALUES(2340587, ?)`, [hash("647")]);
+
+    // ---------------------------------------------------------------------------------------
+    
 
     database.query("CALL calculateInterests();");
 
